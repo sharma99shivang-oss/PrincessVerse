@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "description": "PrincessVerse - a private, joyful space for memories, moods, and milestones.",
+  "engines": {
+    "node": "22.17.1"
+  },
   "workspaces": [
     "frontend",
     "backend"

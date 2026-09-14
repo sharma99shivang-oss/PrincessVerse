@@ -1,0 +1,10 @@
+import CollectionPage from '../components/CollectionPage.jsx';
+export const Gallery = () => <CollectionPage type="gallery" eyebrow="Little snapshots" title="Gallery" subtitle="The moments you wish you could bottle up." icon="📸" />;
+export const Foods = () => <CollectionPage type="food" eyebrow="Sweet & savory" title="Foods" subtitle="Favorite bites, cravings, and places to try." icon="🍓" />;
+export const Movies = () => <CollectionPage type="movie" eyebrow="Lights, camera, cuddle" title="Movies" subtitle="Your watchlist for cozy nights in." icon="🎬" />;
+export const Music = () => <CollectionPage type="music" eyebrow="Songs with a feeling" title="Music" subtitle="The soundtrack to your brightest days." icon="🎧" />;
+export const Letters = () => <CollectionPage type="letter" eyebrow="Written with love" title="Letters" subtitle="Words worth keeping close." icon="💌" />;
+export const Gifts = () => <CollectionPage type="gift" eyebrow="Wrapped in wonder" title="Gifts" subtitle="Surprises, wishes, and thoughtful little things." icon="🎁" />;
+export const Timeline = () => <CollectionPage type="timeline" eyebrow="Once upon a time" title="Timeline" subtitle="Every chapter of your story, in one place." icon="🌷" />;
+export const BucketList = () => <CollectionPage type="bucket" eyebrow="Someday starts here" title="Bucket list" subtitle="Big dreams and tiny adventures to share." icon="🎈" />;
+export const Notifications = () => <CollectionPage type="notification" eyebrow="A little ping" title="Notifications" subtitle="Sweet reminders from your universe." icon="💖" />;

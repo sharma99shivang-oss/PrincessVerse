@@ -1,0 +1,6 @@
+import { Bell, Lock, Palette, ShieldCheck } from 'lucide-react';
+import GlassCard from '../components/GlassCard.jsx';
+import PageHeader from '../components/PageHeader.jsx';
+export default function Settings() {
+  return <><PageHeader eyebrow="Make it feel like yours" title="Settings" subtitle="Small choices for a softer, safer experience." /><div className="settings-list"><GlassCard className="setting-row"><span className="setting-icon"><Palette /></span><div><h3>Appearance</h3><p>Blush glass theme · system-friendly contrast</p></div><span className="toggle on" /></GlassCard><GlassCard className="setting-row"><span className="setting-icon"><Bell /></span><div><h3>Sweet reminders</h3><p>Allow gentle nudges for moods and milestones</p></div><span className="toggle on" /></GlassCard><GlassCard className="setting-row"><span className="setting-icon"><Lock /></span><div><h3>Privacy</h3><p>Your memories are private by default</p></div><span className="setting-arrow">›</span></GlassCard><GlassCard className="setting-row"><span className="setting-icon"><ShieldCheck /></span><div><h3>Security</h3><p>JWT sessions and protected account routes</p></div><span className="setting-arrow">›</span></GlassCard></div></>;
+}

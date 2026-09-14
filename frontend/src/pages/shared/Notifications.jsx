@@ -1,0 +1,8 @@
+import { Bell, CheckCheck, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import client from '../../api/client.js';
+import GlassCard from '../../components/GlassCard.jsx';
+import PageHeader from '../../components/PageHeader.jsx';
+
+export default function NotificationsPage() { const [items, setItems] = useState([]); const load = () => client.get('/notifications').then(({ data }) => setItems(data.notifications || data.items || [])); useEffect(() => { load().catch(() => {}); }, []); const readAll = async () => { await client.patch('/notifications/read-all'); await load(); toast.success('All caught up.'); }; const remove = async (id) => { await client.delete(`/notifications/${id}`); setItems((current) => current.filter((item) => item._id !== id)); }; return <><PageHeader eyebrow="A little ping" title="Notifications" subtitle="Sweet reminders from your shared universe." action={<button className="soft-button" onClick={readAll}><CheckCheck size={15} /> Mark all read</button>} /><div className="notification-list">{items.length ? items.map((item) => <GlassCard className={`notification-card ${item.isRead ? '' : 'unread'}`} key={item._id}><span className="notification-icon"><Bell size={16} /></span><div><strong>{item.title}</strong><p>{item.message}</p><small>{new Date(item.createdAt).toLocaleString()}</small></div><button className="icon-button" onClick={() => remove(item._id)} aria-label="Delete notification"><Trash2 size={15} /></button></GlassCard>) : <div className="empty-state"><div className="empty-illustration">💌</div><h3>No notifications yet</h3><p>New memories and sweet reminders will appear here.</p></div>}</div></>; }

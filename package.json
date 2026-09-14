@@ -1,0 +1,20 @@
+{
+  "name": "princessverse",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PrincessVerse - a private, joyful space for memories, moods, and milestones.",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "concurrently \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "build": "npm run build --workspace frontend",
+    "lint": "node scripts/lint.mjs",
+    "seed": "npm run seed --workspace backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

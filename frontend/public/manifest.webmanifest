@@ -1,0 +1,13 @@
+{
+  "name": "PrincessVerse",
+  "short_name": "PrincessVerse",
+  "description": "A private, joyful space for memories, moods, and milestones.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff8fc",
+  "theme_color": "#e991b9",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

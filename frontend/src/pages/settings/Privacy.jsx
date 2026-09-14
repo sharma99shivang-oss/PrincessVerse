@@ -1,0 +1,5 @@
+import { EyeOff, Lock } from 'lucide-react';
+import { useState } from 'react';
+import GlassCard from '../../components/GlassCard.jsx';
+import PageHeader from '../../components/PageHeader.jsx';
+export default function Privacy() { const [privateMemories, setPrivateMemories] = useState(false); return <><PageHeader eyebrow="Your space, your rules" title="Privacy settings" subtitle="Choose what stays close and what you share." /><div className="settings-list"><GlassCard className="setting-row"><span className="setting-icon"><Lock /></span><div><h3>Private memories</h3><p>New memories default to private when enabled.</p></div><button className={`toggle ${privateMemories ? 'on' : ''}`} onClick={() => setPrivateMemories((value) => !value)}><span /></button></GlassCard><GlassCard className="setting-row"><span className="setting-icon"><EyeOff /></span><div><h3>Profile visibility</h3><p>Manage birthday and activity visibility from your shared profile.</p></div><span className="date-chip">Couple only</span></GlassCard></div></>; }

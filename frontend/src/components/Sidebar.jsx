@@ -4,11 +4,9 @@ import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-const getImageUrl = (url) => {
+const getAvatarUrl = (url) => {
   if (!url) return "/default-avatar.png";
-
   if (url.startsWith("http")) return url;
-
   return `${API_URL}${url}`;
 };
 const sharedLinks = [
@@ -68,6 +66,6 @@ export default function Sidebar({ open, onClose, variant, modules = {}, }) {
       <NavLink to="/settings" onClick={onClose} className="nav-link"><Settings size={17} /><span>Settings</span></NavLink>
       {user?.role === 'ADMIN' && <NavLink to="/admin/dashboard" onClick={onClose} className="nav-link"><Shield size={17} /><span>Admin dashboard</span></NavLink>}
     </nav>
-    <div className="sidebar-bottom"><div className="mini-profile"><img src={getImageUrl(user?.avatar)} alt={user?.name} /><div><strong>{user?.name || 'Princess'}</strong><small>Dreamer mode ✨</small></div></div><button className="logout-button" onClick={logout}><LogOut size={16} /></button></div>
+    <div className="sidebar-bottom"><div className="mini-profile"><img src={getAvatarUrl(user?.avatar)} alt={user?.name} /><div><strong>{user?.name || 'Princess'}</strong><small>Dreamer mode ✨</small></div></div><button className="logout-button" onClick={logout}><LogOut size={16} /></button></div>
   </aside>;
 }

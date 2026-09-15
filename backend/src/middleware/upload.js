@@ -1,6 +1,4 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 
 // ===== Existing uploads (Gallery, Memories, Videos etc.) =====
 const allowed = new Set([
@@ -37,28 +35,10 @@ export const upload = multer({
   },
 });
 
-// ===== Profile Image Upload (Avatar + Cover) =====
-
-// uploads/profile folder automatically create
-const profileDir = "uploads/profile";
-
-if (!fs.existsSync(profileDir)) {
-  fs.mkdirSync(profileDir, { recursive: true });
-}
-
-const profileStorage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, profileDir);
-  },
-
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
+// ===== Profile Image Upload (Cloudinary Memory Upload) =====
 
 export const uploadProfile = multer({
-  storage: profileStorage,
+  storage, // 👈 SAME memoryStorage use karo
 
   fileFilter(req, file, cb) {
     if (!file.mimetype.startsWith("image/")) {

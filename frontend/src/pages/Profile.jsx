@@ -56,7 +56,7 @@ export default function Profile() {
             },
           }
         );
-        console.log("UPLOAD RESPONSE:", uploadData);
+        // console.log("UPLOAD RESPONSE:", uploadData);
         avatar = uploadData.avatar || avatar;
         coverPhoto = uploadData.coverPhoto || coverPhoto;
       }
@@ -67,7 +67,7 @@ export default function Profile() {
         avatar,
         coverPhoto,
       });
-      console.log("PATCH RESPONSE:", data.user);
+      // console.log("PATCH RESPONSE:", data.user);
       setUser(data.user);
 
       setForm((prev) => ({

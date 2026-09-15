@@ -7,11 +7,13 @@ import Logo from './Logo.jsx';
 import { usePermissions } from "../context/PermissionContext.jsx";
 const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-const getImageUrl = (url) => {
+const getAvatarUrl = (url) => {
   if (!url) return "/default-avatar.png";
 
+  // Cloudinary ya koi external URL
   if (url.startsWith("http")) return url;
 
+  // Local/Render uploads
   return `${API_URL}${url}`;
 };
 export default function AppShell({ children, variant = "shared" }) {
@@ -31,7 +33,7 @@ export default function AppShell({ children, variant = "shared" }) {
       <div className="profile-dropdown-user">
         <img
           className="avatar"
-          src={getImageUrl(user?.avatar)}
+          src={getAvatarUrl(user?.avatar)}
           alt={user?.name}
         />
         <div>

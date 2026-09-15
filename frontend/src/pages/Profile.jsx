@@ -6,15 +6,14 @@ import GlassCard from '../components/GlassCard.jsx';
 import PageHeader from '../components/PageHeader.jsx';
 import toast from "react-hot-toast";
 import { usePermissions } from "../context/PermissionContext.jsx";
-const getImageUrl = (path) => {
-  if (!path) return "/default-avatar.png";
+const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-  if (path.startsWith("http")) return path;
+const getImageUrl = (url) => {
+  if (!url) return "/default-avatar.png";
 
-  // Agar slash nahi hai to add kar do
-  const fixedPath = path.startsWith("/") ? path : `/uploads/profile/${path}`;
+  if (url.startsWith("http")) return url;
 
-  return `http://localhost:5000${fixedPath}`;
+  return `${API_URL}${url}`;
 };
 export default function Profile() {
   const { user, setUser, role } = useAuth();

@@ -5,14 +5,14 @@ import Sidebar from './Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import Logo from './Logo.jsx';
 import { usePermissions } from "../context/PermissionContext.jsx";
-const getAvatarUrl = (avatar) => {
-  if (!avatar) return "/default-avatar.png";
+const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-  // Unsplash ya koi external URL
-  if (avatar.startsWith("http")) return avatar;
+const getImageUrl = (url) => {
+  if (!url) return "/default-avatar.png";
 
-  // Uploaded image
-  return `http://localhost:5000${avatar}`;
+  if (url.startsWith("http")) return url;
+
+  return `${API_URL}${url}`;
 };
 export default function AppShell({ children, variant = "shared" }) {
   const [open, setOpen] = useState(false);
@@ -30,9 +30,9 @@ export default function AppShell({ children, variant = "shared" }) {
     <div className="profile-dropdown">
       <div className="profile-dropdown-user">
         <img
-          src={getAvatarUrl(user?.avatar)}
+          className="avatar"
+          src={getImageUrl(user?.avatar)}
           alt={user?.name}
-          className="dropdown-avatar"
         />
         <div>
           <strong>{user?.name}</strong>

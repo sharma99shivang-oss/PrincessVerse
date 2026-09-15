@@ -8,12 +8,14 @@ import CountdownCard from '../components/dashboard/CountdownCard.jsx';
 import MemoryCard from '../components/dashboard/MemoryCard.jsx';
 import LetterPreviewCard from '../components/dashboard/LetterPreviewCard.jsx';
 import { usePermissions } from "../context/PermissionContext.jsx";
-const getAvatarUrl = (avatar) => {
-  if (!avatar) return "/default-avatar.png";
+const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-  if (avatar.startsWith("http")) return avatar;
+const getImageUrl = (url) => {
+  if (!url) return "/default-avatar.png";
 
-  return `http://localhost:5000${avatar}`;
+  if (url.startsWith("http")) return url;
+
+  return `${API_URL}${url}`;
 };
 export default function Dashboard() {
   const { user } = useAuth();
@@ -52,7 +54,7 @@ export default function Dashboard() {
       View Partner Profile
       <ArrowUpRight size={15} />
     </Link></div><img
-        src={getAvatarUrl(user?.avatar)}
+        src={getImageUrl(user?.avatar)}
         alt={user?.name}
         className="partner-avatar"
       /></section>

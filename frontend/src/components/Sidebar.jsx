@@ -2,12 +2,14 @@ import { NavLink } from 'react-router-dom';
 import { Activity, BarChart3, Bell, CalendarDays, Camera, Clapperboard, Download, Gift, Home, KeyRound, ListChecks, LogOut, Mail, Music2, Settings, Smile, Utensils, UserRound, Shield, TrendingUp } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-const getAvatarUrl = (avatar) => {
-  if (!avatar) return "/default-avatar.png";
+const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-  if (avatar.startsWith("http")) return avatar;
+const getImageUrl = (url) => {
+  if (!url) return "/default-avatar.png";
 
-  return `http://localhost:5000${avatar}`;
+  if (url.startsWith("http")) return url;
+
+  return `${API_URL}${url}`;
 };
 const sharedLinks = [
   ["/", "Home", Home, true],
@@ -66,10 +68,6 @@ export default function Sidebar({ open, onClose, variant, modules = {}, }) {
       <NavLink to="/settings" onClick={onClose} className="nav-link"><Settings size={17} /><span>Settings</span></NavLink>
       {user?.role === 'ADMIN' && <NavLink to="/admin/dashboard" onClick={onClose} className="nav-link"><Shield size={17} /><span>Admin dashboard</span></NavLink>}
     </nav>
-    <div className="sidebar-bottom"><div className="mini-profile"><img
-      src={getAvatarUrl(user?.avatar)}
-      alt={user?.name}
-      className="sidebar-avatar"
-    /><div><strong>{user?.name || 'Princess'}</strong><small>Dreamer mode ✨</small></div></div><button className="logout-button" onClick={logout}><LogOut size={16} /></button></div>
+    <div className="sidebar-bottom"><div className="mini-profile"><img src={getImageUrl(user?.avatar)} alt={user?.name} /><div><strong>{user?.name || 'Princess'}</strong><small>Dreamer mode ✨</small></div></div><button className="logout-button" onClick={logout}><LogOut size={16} /></button></div>
   </aside>;
 }

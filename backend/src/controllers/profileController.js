@@ -1,4 +1,22 @@
 import Couple from "../models/Couple.js"; // Upar imports me hona chahiye
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
+
+const uploadToCloudinary = (buffer, folder) =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
 
 export async function updateProfile(req, res) {
   // ❤️ Partner Permission Check
@@ -66,19 +84,27 @@ if (!couple?.permissions?.canEditOwnProfile) {
 }
 
 export async function uploadProfileImages(req, res) {
+  const user = req.user;
+
   if (req.files?.avatar?.[0]) {
-    req.user.avatar = `/uploads/profile/${req.files.avatar[0].filename}`;
+    user.avatar = await uploadToCloudinary(
+      req.files.avatar[0].buffer,
+      "PrincessVerse/Profile"
+    );
   }
 
   if (req.files?.coverPhoto?.[0]) {
-    req.user.coverPhoto = `/uploads/profile/${req.files.coverPhoto[0].filename}`;
+    user.coverPhoto = await uploadToCloudinary(
+      req.files.coverPhoto[0].buffer,
+      "PrincessVerse/Cover"
+    );
   }
 
-  await req.user.save();
+  await user.save();
 
   res.json({
     success: true,
-    avatar: req.user.avatar,
-    coverPhoto: req.user.coverPhoto,
+    avatar: user.avatar,
+    coverPhoto: user.coverPhoto,
   });
 }

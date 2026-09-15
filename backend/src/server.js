@@ -32,14 +32,14 @@ const allowedOrigins = (process.env.CLIENT_URL || "")
 app.use(
   cors({
     origin(origin, callback) {
-      // Postman ya same-origin requests allow
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
+      console.log("Blocked Origin:", origin);
+      callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
   })

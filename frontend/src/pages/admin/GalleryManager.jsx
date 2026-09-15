@@ -7,7 +7,8 @@ import MemoryUploader from '../../components/gallery/MemoryUploader.jsx';
 
 export default function GalleryManager() {
   const { role } = useAuth(); const [open, setOpen] = useState(false);
-  return <>{role === 'ADMIN' && <PageHeader eyebrow="Keeper's room" subtitle="Upload, organize, and keep your shared chapters safe."
+  return <>{role === 'ADMIN' && <PageHeader
+  // eyebrow="Keeper's room" subtitle="Upload, organize, and keep your shared chapters safe."
   // action=
   // {
   // <button className="primary-button" onClick={() => setOpen(true)}><Plus size={16} /> Upload memory</button>}

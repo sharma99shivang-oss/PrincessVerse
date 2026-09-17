@@ -150,6 +150,30 @@ export async function updateResource(req, res) {
 
     item.images.push(...uploads.map((u) => u.secure_url));
     item.imagePublicIds.push(...uploads.map((u) => u.public_id));
+  } if (type === "memories" && req.files) {
+    // Images Upload
+    if (req.files.images?.length) {
+      const imageUploads = await Promise.all(
+        req.files.images.map((file) =>
+          uploadBuffer(file, "princessverse/memories")
+        )
+      );
+
+      item.images.push(...imageUploads.map((u) => u.secure_url));
+      item.imagePublicIds.push(...imageUploads.map((u) => u.public_id));
+    }
+
+    // Videos Upload
+    if (req.files.videos?.length) {
+      const videoUploads = await Promise.all(
+        req.files.videos.map((file) =>
+          uploadBuffer(file, "princessverse/memories")
+        )
+      );
+
+      item.videos.push(...videoUploads.map((u) => u.secure_url));
+      item.videoPublicIds.push(...videoUploads.map((u) => u.public_id));
+    }
   }
   Object.assign(item, body);
   await item.save();
@@ -220,10 +244,12 @@ export async function listComments(req, res) {
 }
 
 export async function createComment(req, res) {
-  const { memoryId, text } = req.body;
+  const { content, contentId, contentType } = req.body;
 
-  if (!text?.trim()) {
-    return res.status(400).json({ message: "Comment cannot be empty." });
+  if (!content?.trim()) {
+    return res.status(400).json({
+      message: "Comment cannot be empty.",
+    });
   }
 
   // 🔒 Partner permission check
@@ -238,14 +264,22 @@ export async function createComment(req, res) {
   }
 
   const comment = await Comment.create({
-    memory: memoryId,
-    text,
-    createdBy: req.user._id,
+    content: content.trim(),
+    contentId,
+    contentType: "Memory", // Memory comments
+    author: req.user._id,
+    coupleId: req.user.coupleId,
   });
 
-  await comment.populate("createdBy", "name avatar role");
+  await comment.populate("author", "name avatar role");
 
-  res.status(201).json({ comment });
+  res.status(201).json({
+    comment: {
+      ...comment.toObject(),
+      createdBy: comment.author, // frontend compatibility
+      text: comment.content, // frontend compatibility
+    },
+  });
 }
 // 💌 Partner Reply to Letter
 export async function replyLetter(req, res) {

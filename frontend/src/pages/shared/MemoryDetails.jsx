@@ -33,18 +33,25 @@ export default function MemoryDetails() {
   const addComment = async (event) => {
     event.preventDefault();
 
-    if (!comment.trim()) return;
+    const message = comment.trim();
+
+    if (!message) {
+      toast.error("Comment cannot be empty.");
+      return;
+    }
 
     try {
       const { data } = await client.post("/comments", {
-        memoryId: id,
-        text: comment,
+        content: message,
+        contentId: id,
+        contentType: "memory",
       });
 
       setComments((current) => [...current, data.comment]);
       setComment("");
       toast.success("Comment added 💕");
     } catch (err) {
+      console.error(err.response?.data);
       toast.error(
         err.response?.data?.message || "Comments are disabled."
       );
@@ -217,7 +224,7 @@ export default function MemoryDetails() {
             )}
           </div>
         )}
-      </div></article><GlassCard className="comments-card"><div className="card-heading"><div><span className="eyebrow">Shared thoughts</span><h2>Comments</h2></div><MessageCircle size={19} /></div><div className="comments-list">{comments.map((item) => <div className="comment" key={item._id}><strong>{item.createdBy?.name || 'Your person'}</strong><p>{item.text}</p><small>{new Date(item.createdAt).toLocaleString()}</small></div>)}{!comments.length && <p className="muted-copy">Be the first to leave a little note.</p>}</div>{canComment ? (
+      </div></article><GlassCard className="comments-card"><div className="card-heading"><div><span className="eyebrow">Shared thoughts</span><h2>Comments</h2></div><MessageCircle size={19} /></div><div className="comments-list">{comments.map((item) => <div className="comment" key={item._id}><strong>{item.createdBy?.name || 'Your person'}</strong><p>{item.content}</p><small>{new Date(item.createdAt).toLocaleString()}</small></div>)}{!comments.length && <p className="muted-copy">Be the first to leave a little note.</p>}</div>{canComment ? (
         <form className="comment-form" onSubmit={addComment}>
           <input
             value={comment}

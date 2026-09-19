@@ -115,10 +115,11 @@ export default function AdminDashboard() {
       <Link className="soft-button" to="/couple-profile">
         View Partner Profile
       </Link>
-      <Link to='/chat' className='primary-button'>
+
+      {/* <Link to='/chat' className='primary-button'>
         <MessageCircleHeart size={18} />
         Princess Chat
-      </Link>;
+      </Link> */}
 
     </GlassCard></div>
     <div className="section-heading"><div><span className="eyebrow">Fresh from your universe</span><h2>Recent memories</h2></div><a href="/gallery">See all</a></div>

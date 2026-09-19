@@ -12,6 +12,13 @@ const definitions = [
 
     ["canCommentMemories", "Comment on memories", "Allow notes and reactions on memory details.", MessageCircle],
 
+    [
+        "canUseChat",
+        "Use Princess Chat",
+        "Allow your partner to send and receive private chat messages.",
+        MessageCircle,
+    ],
+
     ["canAddMood", "Add moods", "Let your partner share daily feelings.", Heart],
 
     ["canAddBucketList", "Create bucket dreams", "Allow adding shared goals and adventures.", ListChecks],
@@ -23,6 +30,7 @@ const definitions = [
 const moduleDefinitions = [
     ["gallery", "Gallery", "Show Gallery module to partner."],
     ["letters", "Love Letters", "Show Letters module."],
+    ["chat", "Princess Chat", "Show Princess Chat module to partner."],
     ["timeline", "Timeline", "Show Timeline page."],
     ["music", "Music", "Show Songs section."],
     ["movies", "Movies", "Show Movies section."],

@@ -12,6 +12,7 @@ import Timeline from '../models/Timeline.js';
 import Gift from '../models/Gift.js';
 import BucketList from '../models/BucketList.js';
 import { logActivity } from '../utils/activity.js';
+import User from "../models/User.js";
 
 const defaults = {
   // 📸 Gallery
@@ -30,6 +31,10 @@ const defaults = {
   canAddBucketList: true,
   canEditOwnProfile: true,
   canCreatePlaylist: true,
+
+
+  // 💬 Princess Chat
+  canUseChat: true,
 };
 const paging = (query) => {
   const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
@@ -208,4 +213,44 @@ export async function createInvite(req, res) {
   const token = crypto.randomBytes(24).toString('hex');
   await Couple.findOneAndUpdate({ _id: req.user.coupleId, adminUser: req.user._id }, { inviteTokenHash: crypto.createHash('sha256').update(token).digest('hex'), inviteExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) });
   res.json({ inviteToken: token, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) });
+}
+
+export async function changePassword(req, res) {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      message: "Current password and new password are required.",
+    });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({
+      message: "New password must be at least 8 characters long.",
+    });
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
+
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found.",
+    });
+  }
+
+  const isMatch = await user.comparePassword(currentPassword);
+
+  if (!isMatch) {
+    return res.status(400).json({
+      message: "Current password is incorrect.",
+    });
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Password changed successfully 💖",
+  });
 }

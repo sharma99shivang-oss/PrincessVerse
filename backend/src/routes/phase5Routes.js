@@ -2,10 +2,21 @@ import { Router } from 'express';
 import { protect, adminOnly } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import {
-  getPermissions, updatePermissions, resetPermissions, listNotifications, createNotification,
-  updateNotification, deleteNotification, markAllNotificationsRead, search, getSettings,
-  updateSettings, listActivity, createInvite
-} from '../controllers/phase5Controller.js';
+  getPermissions,
+  updatePermissions,
+  resetPermissions,
+  listNotifications,
+  createNotification,
+  updateNotification,
+  deleteNotification,
+  markAllNotificationsRead,
+  search,
+  getSettings,
+  updateSettings,
+  changePassword,      // ✅ New
+  listActivity,
+  createInvite,
+} from "../controllers/phase5Controller.js";
 
 const permissions = Router();
 permissions.use(protect);
@@ -26,6 +37,7 @@ searchRoutes.get('/', asyncHandler(search));
 const settings = Router();
 settings.use(protect);
 settings.route('/').get(asyncHandler(getSettings)).patch(asyncHandler(updateSettings));
+settings.patch("/change-password", asyncHandler(changePassword));
 
 const activity = Router();
 activity.use(protect);

@@ -50,6 +50,8 @@ import ActivityLogPage from './pages/admin/ActivityLog.jsx';
 import ExportDataPage from './pages/admin/ExportData.jsx';
 import AnalyticsPage from './pages/admin/Analytics.jsx';
 import EditMemory from "./pages/admin/EditMemory";
+import Chat from "./pages/chat/Chat";
+
 function HomeRedirect() {
   const { user } = useAuth();
   return <Navigate to={user?.role === 'ADMIN' ? '/admin/dashboard' : '/partner/dashboard'} replace />;
@@ -90,6 +92,7 @@ export default function App() {
         path="/memories/:id/edit"
         element={<EditMemory />}
       />
+      <Route path="/chat" element={<Chat />} />
     </Routes>
 
   );

@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { Activity, BarChart3, Bell, CalendarDays, Camera, Clapperboard, Download, Gift, Home, KeyRound, ListChecks, LogOut, Mail, Music2, Settings, Smile, Utensils, UserRound, Shield, TrendingUp } from 'lucide-react';
+import { Activity, BarChart3, Bell, CalendarDays, Camera, Clapperboard, Download, Gift, Home, KeyRound, ListChecks, LogOut, Mail, MessageCircle, Music2, Settings, Smile, Utensils, UserRound, Shield, TrendingUp } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
+import { usePermissions } from "../context/PermissionContext.jsx";
 
 const getAvatarUrl = (url) => {
   if (!url) return "/default-avatar.png";
@@ -14,6 +15,7 @@ const sharedLinks = [
 
   ["/gallery", "Gallery", Camera, "gallery"],
   ["/letters", "Letters", Mail, "letters"],
+  ["/chat", "Princess Chat", MessageCircle, "chat"],
   ["/timeline", "Timeline", CalendarDays, "timeline"],
 
   ["/foods", "Foods", Utensils, "foods"],
@@ -27,9 +29,10 @@ const sharedLinks = [
   ["/calendar", "Calendar", CalendarDays, "calendar"],
   ["/notifications", "Notifications", Bell, "notifications"],
 ];
-const adminLinks = [['/admin/dashboard', 'Dashboard', BarChart3], ['/admin/analytics', 'Relationship analytics', TrendingUp], ['/gallery', 'Gallery manager', Camera], ['/letters', 'Letter manager', Mail], ['/timeline', 'Timeline manager', CalendarDays], ['/gifts', 'Gift manager', Gift], ['/music', 'Songs', Music2], ['/movies', 'Movies', Clapperboard], ['/foods', 'Foods', Utensils], ['/moods', 'Mood analytics', Smile], ['/notifications', 'Notifications', Bell], ['/admin/permissions', 'Partner permissions', KeyRound], ['/admin/activity', 'Activity log', Activity], ['/admin/export', 'Export data', Download]];
+const adminLinks = [['/admin/dashboard', 'Dashboard', BarChart3], ['/admin/analytics', 'Relationship analytics', TrendingUp], ['/gallery', 'Gallery manager', Camera], ['/letters', 'Letter manager', Mail], ['/chat', 'Princess Chat', MessageCircle], ['/timeline', 'Timeline manager', CalendarDays], ['/gifts', 'Gift manager', Gift], ['/music', 'Songs', Music2], ['/movies', 'Movies', Clapperboard], ['/foods', 'Foods', Utensils], ['/moods', 'Mood analytics', Smile], ['/notifications', 'Notifications', Bell], ['/admin/permissions', 'Partner permissions', KeyRound], ['/admin/activity', 'Activity log', Activity], ['/admin/export', 'Export data', Download]];
 export default function Sidebar({ open, onClose, variant, modules = {}, }) {
   const { user, logout } = useAuth();
+  const { permissions } = usePermissions();
   const links = variant === 'admin' ? adminLinks : sharedLinks;
   return <aside className={`sidebar ${open ? 'is-open' : ''}`}>
     <div className="sidebar-head"><Logo /><button className="icon-button mobile-close" onClick={onClose}>×</button></div>
@@ -41,7 +44,10 @@ export default function Sidebar({ open, onClose, variant, modules = {}, }) {
         const visible =
           user?.role === "ADMIN" ||
           moduleKey === true ||
-          modules[moduleKey] === true;
+          (
+            modules?.[moduleKey] === true &&
+            (moduleKey !== "chat" || permissions?.canUseChat)
+          );
 
         if (!visible) return null;
         return (

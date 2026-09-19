@@ -1,27 +1,69 @@
-import { Check, Moon, Palette, Sparkles, Waves } from 'lucide-react';
+import { Palette, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
-import client from '../../api/client.js';
-import GlassCard from '../../components/GlassCard.jsx';
-import PageHeader from '../../components/PageHeader.jsx';
+import GlassCard from '../../components/GlassCard';
 
 const themes = [
-  ['princess-pink', 'Princess Pink', 'Blush glass and lavender skies.', '🌸'],
-  ['lavender', 'Lavender', 'Soft lilac calm for slow evenings.', '💜'],
-  ['rose-gold', 'Rose Gold', 'Warm champagne and romantic rose.', '✨'],
-  ['ocean-blue', 'Ocean Blue', 'A clear, breezy coastal mood.', '🌊'],
-  ['midnight-purple', 'Midnight Purple', 'Velvet plum for late-night chapters.', '🌙'],
-  ['dark-princess', 'Dark Princess', 'A deep, gentle palette for quiet memories.', '🖤']
+  {
+    id: 'princess-pink',
+    name: 'Princess Pink',
+    gradient: 'linear-gradient(135deg,#ffd8ec,#fff,#ffe3f6)',
+  },
+  {
+    id: 'lavender-dream',
+    name: 'Lavender Dream',
+    gradient: 'linear-gradient(135deg,#e9d8ff,#faf5ff,#f3e8ff)',
+  },
+  {
+    id: 'dark-princess',
+    name: 'Dark Princess',
+    gradient: 'linear-gradient(135deg,#1f1038,#5724a8,#ff5ba8)',
+  },
+  {
+    id: 'midnight-love',
+    name: 'Midnight Love',
+    gradient: 'linear-gradient(135deg,#0b0b14,#32104d,#9d174d)',
+  },
 ];
 
 export default function ThemeSettings() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('pv_theme') || 'princess-pink');
-  const save = async (next) => {
-    setTheme(next);
-    localStorage.setItem('pv_theme', next);
-    document.documentElement.dataset.theme = next;
-    try { await client.patch('/couples/theme', { theme: next }); toast.success('Theme saved.'); }
-    catch { toast.success('Theme saved on this device.'); }
+  const [active, setActive] = useState('princess-pink');
+
+  const applyTheme = (theme) => {
+    setActive(theme);
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('pv_theme', theme);
   };
-  return <><PageHeader eyebrow="Make it yours" title="Theme settings" subtitle="Choose the atmosphere for your shared universe." /><div className="theme-grid">{themes.map(([value, title, description, emoji]) => <GlassCard className={`theme-card ${theme === value ? 'selected' : ''}`} key={value} onClick={() => save(value)}><div className="theme-preview" data-theme={value}><span>{emoji}</span><Palette size={20} /></div><div className="theme-card-copy"><h3>{title}</h3><p>{description}</p></div><button className={theme === value ? 'primary-button' : 'soft-button'}><Check size={14} /> {theme === value ? 'Active' : 'Use theme'}</button></GlassCard>)}</div><GlassCard className="accessibility-note"><Sparkles size={18} /><div><strong>Comfort first</strong><p>PrincessVerse respects reduced-motion preferences and keeps contrast readable across every theme.</p></div><Waves size={18} /></GlassCard></>;
+
+  return (
+    <div className="settings-subpage">
+      <GlassCard className="premium-card">
+        <div className="settings-heading">
+          <Palette size={22} />
+          <div>
+            <h2>Theme Preview</h2>
+            <p>Tap a theme to preview instantly.</p>
+          </div>
+        </div>
+      </GlassCard>
+
+      <div className="theme-preview-grid">
+        {themes.map((theme) => (
+          <button
+            key={theme.id}
+            className={`theme-preview-card ${active === theme.id ? 'active' : ''}`}
+            onClick={() => applyTheme(theme.id)}
+          >
+            <div
+              className="theme-preview"
+              style={{ background: theme.gradient }}
+            />
+
+            <span>{theme.name}</span>
+
+            {active === theme.id && <CheckCircle2 size={18} />}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }

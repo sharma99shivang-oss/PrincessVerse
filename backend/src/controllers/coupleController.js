@@ -67,7 +67,9 @@ export async function updateCouplePermissions(req, res) {
 // ================= MODULE VISIBILITY =================
 
 // Get modules for current couple
+// Get modules for current couple
 export async function getCoupleModules(req, res) {
+
   const couple = await Couple.findById(req.user.coupleId);
 
   if (!couple) {
@@ -77,9 +79,28 @@ export async function getCoupleModules(req, res) {
     });
   }
 
+  const defaultModules = {
+    gallery: true,
+    letters: true,
+    chat: true, // 💬 NEW
+    timeline: true,
+    music: true,
+    movies: true,
+    foods: true,
+    gifts: true,
+    moods: true,
+    bucketList: true,
+    calendar: true,
+    notifications: true,
+    relationshipAnalytics: true,
+  };
+
   res.json({
     success: true,
-    modules: couple.modules,
+    modules: {
+      ...defaultModules,
+      ...(couple.modules?.toObject?.() || couple.modules || {}),
+    },
   });
 }
 
@@ -98,9 +119,9 @@ export async function updateCoupleModules(req, res) {
   }
 
   couple.modules = {
-    ...couple.modules.toObject(),
-    ...req.body,
-  };
+  ...(couple.modules?.toObject?.() || {}),
+  ...req.body,
+};
 
   await couple.save();
 

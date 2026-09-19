@@ -1,4 +1,4 @@
-import { Activity, CalendarDays, Camera, Heart, Mail, Sparkles, Users } from 'lucide-react';
+import { Activity, CalendarDays, Camera, Heart, Mail, Sparkles, Users, MessageCircleHeart } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import client from '../api/client.js';
 import GlassCard from '../components/GlassCard.jsx';
@@ -112,9 +112,14 @@ export default function AdminDashboard() {
       </GlassCard>
     )}
     <div className="dashboard-two-col"><CountdownCard anniversaryDate={couple?.anniversaryDate} relationshipName={couple?.relationshipName} partnerName={couple?.partnerUser?.name} /><GlassCard className="partner-activity-card"><div className="card-heading"><div><span className="eyebrow">Partner pulse</span><h2>{couple?.partnerUser?.name || 'Your partner'}</h2></div><Users size={20} /></div><p>Your shared space is ready for another beautiful memory.</p><div className="activity-chip"><span className="activity-dot" /> Shared couple space active</div>
-    <Link className="soft-button" to="/couple-profile">
-  View Partner Profile
-</Link>
+      <Link className="soft-button" to="/couple-profile">
+        View Partner Profile
+      </Link>
+      <Link to='/chat' className='primary-button'>
+        <MessageCircleHeart size={18} />
+        Princess Chat
+      </Link>;
+
     </GlassCard></div>
     <div className="section-heading"><div><span className="eyebrow">Fresh from your universe</span><h2>Recent memories</h2></div><a href="/gallery">See all</a></div>
     <div className="dashboard-memory-grid">{memories.slice(0, 3).map((item) => <MemoryCard key={item._id} item={item} />)}{!memories.length && <MemoryCard />}</div>

@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarDays, Heart, Mail, Sparkles, Star } from 'lucide-react';
+import { ArrowUpRight, CalendarDays, Heart, Mail, Sparkles, Star, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import client from '../api/client.js';
@@ -19,7 +19,7 @@ const getImageUrl = (url) => {
 };
 export default function Dashboard() {
   const { user } = useAuth();
-  const { modules } = usePermissions();
+  const { modules, permissions } = usePermissions();
   const isAdmin = user?.role === "ADMIN";
   const [data, setData] = useState({ counts: {}, recent: [], total: 0 });
   const [couple, setCouple] = useState(null);
@@ -155,6 +155,30 @@ export default function Dashboard() {
       </>
     )}
     <div className="partner-content-grid">
+
+      {/* ================= PRINCESS CHAT MODULE ================= */}
+      {(isAdmin || (modules.chat && permissions?.canUseChat)) && (
+        <GlassCard className="chat-dashboard-card">
+          <div className="chat-dashboard-left">
+            <div className="chat-dashboard-icon">
+              <MessageCircle size={28} />
+            </div>
+
+            <div>
+              <span className="eyebrow">Private Couple Chat</span>
+              <h2>Princess Chat 💖</h2>
+              <p>
+                Real-time private conversation with your partner. Share sweet
+                messages instantly.
+              </p>
+            </div>
+          </div>
+
+          <Link className="chat-open-btn" to="/chat">
+            Open Chat <ArrowUpRight size={15} />
+          </Link>
+        </GlassCard>
+      )}
 
       {(isAdmin || modules.letters) && (
         <LetterPreviewCard item={letter} />

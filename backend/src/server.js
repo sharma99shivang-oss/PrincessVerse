@@ -16,8 +16,11 @@ import { memoryRoutes, albumRoutes, letterRoutes, timelineRoutes, commentRoutes 
 import { giftRoutes, songRoutes, movieRoutes, foodRoutes, moodRoutes, bucketListRoutes, phase4DashboardRoutes } from './routes/phase4Routes.js';
 import { permissions, notifications, searchRoutes, settings, activity, invite } from './routes/phase5Routes.js';
 import { analytics, achievements, smartMemories } from './routes/phase6Routes.js';
-
+import chatRoutes from "./routes/chatRoutes.js";
+import http from "http";
+import { initSocket } from "./socket/socket.js";
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 5000;
 
 app.use(
@@ -82,13 +85,21 @@ app.use('/api/couples/invite', invite);
 app.use('/api/analytics', analytics);
 app.use('/api/achievements', achievements);
 app.use('/api/smart-memories', smartMemories);
+app.use("/api/chat", chatRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
 connectDB()
-  .then(() => app.listen(port, () => console.log(`PrincessVerse API listening on port ${port}`)))
+  .then(() => {
+    initSocket(server);
+
+    server.listen(port, () => {
+      console.log(`🚀 PrincessVerse API listening on port ${port}`);
+      console.log("💖 Socket.IO Ready");
+    });
+  })
   .catch((error) => {
-    console.error('Unable to start API:', error.message);
+    console.error("Unable to start API:", error.message);
     process.exit(1);
   });
 

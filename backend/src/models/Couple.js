@@ -6,6 +6,7 @@ const permissionsSchema = new mongoose.Schema({
   canDeleteOwnPhotos: { type: Boolean, default: true },
   canCommentMemories: { type: Boolean, default: true },
 
+  canUseChat: { type: Boolean, default: true },
   // 💌 Love Letters
   canReplyLetters: { type: Boolean, default: true },
   canDeleteOwnReplies: { type: Boolean, default: true },
@@ -23,6 +24,7 @@ const modulesSchema = new mongoose.Schema({
   memories: { type: Boolean, default: true },
   letters: { type: Boolean, default: true },
   letterReplies: { type: Boolean, default: true },
+  chat: { type: Boolean, default: true },
   timeline: { type: Boolean, default: true },
 
   gifts: { type: Boolean, default: true },

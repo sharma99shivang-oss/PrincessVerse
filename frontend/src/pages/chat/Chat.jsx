@@ -14,18 +14,16 @@ import ChatBubble from './ChatBubble';
 import ChatInput from './ChatInput';
 import GlassCard from '../../components/GlassCard';
 import toast from 'react-hot-toast';
+import { useChat } from "../../context/ChatContext";
 
 export default function Chat() {
+
     const { user } = useAuth();
     const navigate = useNavigate();
-
+    const { messages, sendMessage, markSeen } = useChat();
     const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-    const getImageUrl = (url) => {
-        if (!url) return "/default-avatar.png";
-        if (url.startsWith("http")) return url;
-        return `${API_URL}${url}`;
-    };
+
 
     const [couple, setCouple] = useState(null);
 
@@ -33,47 +31,48 @@ export default function Chat() {
         user?.role === "ADMIN"
             ? couple?.partnerUser
             : couple?.adminUser;
-    const [messages, setMessages] = useState([]);
+
     const [loading, setLoading] = useState(true);
 
     const bottomRef = useRef(null);
-
+    const getImageUrl = (url) => {
+        if (!url) return "/default-avatar.png";
+        if (url.startsWith("http")) return url;
+        return `${API_URL}${url}`;
+    };
     useEffect(() => {
-        loadMessages();
-
-        client
-            .get("/couples/me")
+        client.get("/couples/me")
             .then(({ data }) => {
                 setCouple(data.couple);
             })
-            .catch(() => { });
+            .finally(() => setLoading(false));
     }, []);
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const loadMessages = async () => {
-        try {
-            const { data } = await client.get('/chat/messages');
-            setMessages(data.messages || []);
-        } catch {
-            toast.error('Unable to load chat.');
-        } finally {
-            setLoading(false);
-        }
-    }
-    const sendMessage = async ({ text = "", media = null }) => {
-        try {
-            const { data } = await client.post("/chat/messages", {
-                text,
-                media,
-            });
+    // const loadMessages = async () => {
+    //     try {
+    //         const { data } = await client.get('/chat/messages');
+    //         setMessages(data.messages || []);
+    //     } catch {
+    //         toast.error('Unable to load chat.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
+    // const sendMessage = async ({ text = "", media = null }) => {
+    //     try {
+    //         const { data } = await client.post("/chat/messages", {
+    //             text,
+    //             media,
+    //         });
 
-            setMessages((prev) => [...prev, data.message]);
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Message failed.");
-        }
-    };
+    //         setMessages((prev) => [...prev, data.message]);
+    //     } catch (err) {
+    //         toast.error(err.response?.data?.message || "Message failed.");
+    //     }
+    // };
 
     return (
         <div className='chat-page'>
@@ -128,7 +127,7 @@ export default function Chat() {
                     <div className="chat-empty-state">
                         <Heart size={40} color="#ff4fa3" />
                         <h3>Start your first conversation 💖</h3>
-                        <p>Every love story starts with one message.</p>
+                        {/* <p>Every love story starts with one message.</p> */}
                     </div>
                 ) : (
                     messages.map((msg) => (

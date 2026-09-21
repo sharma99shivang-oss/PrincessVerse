@@ -30,21 +30,19 @@ export function ChatProvider({ children }) {
 
                 // Join couple room
                 const { data: coupleData } = await client.get("/couples/me");
-
                 coupleIdRef.current = coupleData.couple._id;
 
-                const joinSocketRoom = () => {
+                const joinRoom = () => {
                     socket.emit("join", user._id);
                     socket.emit("join-couple", coupleIdRef.current);
                     console.log("❤️ Joined Room:", coupleIdRef.current);
                 };
 
-                if (socket.connected) {
-                    joinSocketRoom();
-                } else {
-                    socket.connect();
-                    socket.once("connect", joinSocketRoom);
-                }
+                // First connection
+                joinRoom();
+
+                // Every reconnect
+                socket.on("connect", joinRoom);
             } catch (err) {
                 console.error("Chat init failed:", err);
             }
@@ -100,6 +98,7 @@ export function ChatProvider({ children }) {
             socket.off("online-users", setOnlineUsers);
             socket.off("seen-message", handleSeen);
             socket.off("delete-message", handleDelete);
+            socket.off("connect", joinRoom);
         };
     }, [user]);
 

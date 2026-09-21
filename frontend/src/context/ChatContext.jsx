@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState, useRef } from 'react';
-import socket from '../socket/socket';
-import client from '../api/client';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useEffect, useState, useRef } from "react";
+import socket from "../socket/socket";
+import client from "../api/client";
+import { useAuth } from "./AuthContext";
 
 const ChatContext = createContext();
 
@@ -12,7 +12,9 @@ export function ChatProvider({ children }) {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [typing, setTyping] = useState("");
     const [unreadCount, setUnreadCount] = useState(0);
+
     const coupleIdRef = useRef("");
+
     useEffect(() => {
         if (!user?._id) return;
 
@@ -20,90 +22,80 @@ export function ChatProvider({ children }) {
 
         const initializeChat = async () => {
             try {
-                // Messages
+                // Load old messages
                 const { data: chatData } = await client.get("/chat/messages");
                 if (isMounted) {
                     setMessages(chatData.messages || []);
                 }
 
-                // Couple
+                // Join couple room
                 const { data: coupleData } = await client.get("/couples/me");
 
-                // Save coupleId
                 coupleIdRef.current = coupleData.couple._id;
 
-                // Join Socket Rooms
                 socket.emit("join", user._id);
                 socket.emit("join-couple", coupleData.couple._id);
 
-                console.log("❤️ Joined Couple Room:", coupleData.couple._id);
+                console.log("❤️ Joined Room:", coupleData.couple._id);
             } catch (err) {
-                console.error("Chat init failed", err);
+                console.error("Chat init failed:", err);
             }
         };
 
         initializeChat();
 
         // ===== LIVE MESSAGE =====
-        socket.on("new-message", (message) => {
+        const handleNewMessage = (message) => {
             setMessages((prev) => {
                 const exists = prev.some((m) => m._id === message._id);
                 return exists ? prev : [...prev, message];
             });
 
-            if (message.sender?._id !== user?._id) {
+            if (message.sender?._id !== user._id) {
                 setUnreadCount((prev) => prev + 1);
             }
-        });
+        };
 
-        // ===== TYPING =====
-        socket.on("typing", (senderName) => {
+        const handleTyping = (senderName) => {
             setTyping(`${senderName} is typing...`);
-        });
+        };
 
-        socket.on("stop-typing", () => {
+        const handleStopTyping = () => {
             setTyping("");
-        });
+        };
 
-        // ===== ONLINE USERS =====
-        socket.on("online-users", setOnlineUsers);
-
-        // ===== SEEN =====
-        socket.on("seen-message", (messageId) => {
+        const handleSeen = (messageId) => {
             setMessages((prev) =>
                 prev.map((msg) =>
-                    msg._id === messageId
-                        ? { ...msg, seen: true }
-                        : msg
+                    msg._id === messageId ? { ...msg, seen: true } : msg
                 )
             );
-        });
-        socket.on("delete-message", ({ messageId }) => {
-            setMessages((prev) =>
-                prev.filter((m) => m._id !== messageId)
-            );
-        });
+        };
+
+        const handleDelete = ({ messageId }) => {
+            setMessages((prev) => prev.filter((m) => m._id !== messageId));
+        };
+
+        socket.on("new-message", handleNewMessage);
+        socket.on("typing", handleTyping);
+        socket.on("stop-typing", handleStopTyping);
+        socket.on("online-users", setOnlineUsers);
+        socket.on("seen-message", handleSeen);
+        socket.on("delete-message", handleDelete);
+
         return () => {
             isMounted = false;
 
-            socket.off("new-message");
-            socket.off("typing");
-            socket.off("stop-typing");
-            socket.off("online-users");
-            socket.off("seen-message");
-            socket.off("delete-message");
+            socket.off("new-message", handleNewMessage);
+            socket.off("typing", handleTyping);
+            socket.off("stop-typing", handleStopTyping);
+            socket.off("online-users", setOnlineUsers);
+            socket.off("seen-message", handleSeen);
+            socket.off("delete-message", handleDelete);
         };
-    }, [user?._id]);
+    }, [user]);
 
-    // async function loadMessages() {
-    //     try {
-    //         const { data } = await client.get('/chat/messages');
-    //         setMessages(data.messages || []);
-    //     } catch (err) {
-    //         console.error(err);
-    //     }
-    // }
-
+    // ===== SEND MESSAGE =====
     async function sendMessage({ text = "", media = null }) {
         try {
             const { data } = await client.post("/chat/messages", {
@@ -112,18 +104,16 @@ export function ChatProvider({ children }) {
             });
 
             // Sender ko instantly dikhao
-            setMessages((prev) => {
-                const exists = prev.some((m) => m._id === data.message._id);
-                return exists ? prev : [...prev, data.message];
-            });
+            setMessages((prev) => [...prev, data.message]);
 
             // Partner ko realtime bhejo
             socket.emit("send-message", data.message);
-
         } catch (err) {
-            console.error(err);
+            console.error("Send Error:", err.response?.data || err);
         }
     }
+
+    // ===== TYPING =====
     function startTyping() {
         if (!coupleIdRef.current) return;
 
@@ -138,9 +128,12 @@ export function ChatProvider({ children }) {
 
         socket.emit("stop-typing", coupleIdRef.current);
     }
+
+    // ===== SEEN =====
     function markSeen(messageId) {
         client.patch(`/chat/seen/${messageId}`);
     }
+
     function clearUnread() {
         setUnreadCount(0);
     }

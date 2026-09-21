@@ -1,5 +1,6 @@
 import Message from "../models/Message.js";
-
+import { getIO } from "../socket/socket.js";
+import { sendNotification } from "../utils/sendNotification.js";
 export async function getMessages(req, res) {
     const messages = await Message.find({
         coupleId: req.user.coupleId,
@@ -24,13 +25,37 @@ export async function sendMessage(req, res) {
 
     await message.populate("sender", "name avatar role");
 
+    // ❤️ Live Socket Message
+    const io = getIO();
+
+    io.to(req.user.coupleId.toString()).emit("new-message", message);
+
+    // 🔔 Live Notification
+    await sendNotification({
+        coupleId: req.user.coupleId,
+        recipient: null,
+        title: `${message.sender.name} 💬`,
+        message: text || "Sent you a photo/video ❤️",
+        type: "chat",
+        link: "/chat",
+    });
+
     res.status(201).json({ message });
 }
 
 export async function markSeen(req, res) {
-    await Message.findByIdAndUpdate(req.params.id, {
-        seen: true,
-    });
+    const message = await Message.findByIdAndUpdate(
+        req.params.id,
+        { seen: true },
+        { new: true }
+    );
+
+    const io = getIO();
+
+    io.to(req.user.coupleId.toString()).emit(
+        "seen-message",
+        message._id
+    );
 
     res.json({ success: true });
 }
@@ -77,7 +102,12 @@ export async function deleteChatMessage(req, res) {
     }
 
     await message.save();
+    const io = getIO();
 
+    io.to(req.user.coupleId.toString()).emit("delete-message", {
+        messageId: message._id,
+        deleteForEveryone,
+    });
     res.json({
         success: true,
     });

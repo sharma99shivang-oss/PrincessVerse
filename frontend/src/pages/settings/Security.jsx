@@ -9,13 +9,29 @@ import {
     Eye,
     EyeOff,
 } from 'lucide-react';
+
 import toast from 'react-hot-toast';
 import client from '../../api/client';
 import GlassCard from '../../components/GlassCard';
 
 export default function Security() {
     const [show, setShow] = useState(false);
-
+    const [sessions] = useState([
+        {
+            id: 1,
+            icon: Laptop,
+            name: "Windows • Chrome",
+            location: "Bareilly, India",
+            current: true,
+        },
+        {
+            id: 2,
+            icon: Smartphone,
+            name: "Android • Chrome",
+            location: "Last active today",
+            current: false,
+        },
+    ]);
     const [form, setForm] = useState({
         currentPassword: '',
         newPassword: '',
@@ -28,7 +44,13 @@ export default function Security() {
         if (form.newPassword !== form.confirmPassword) {
             return toast.error('Passwords do not match');
         }
+        if (form.newPassword.length < 8) {
+            return toast.error("Password must be at least 8 characters.");
+        }
 
+        if (form.currentPassword === form.newPassword) {
+            return toast.error("New password must be different.");
+        }
         try {
             await client.patch('/settings/change-password', {
                 currentPassword: form.currentPassword,
@@ -64,7 +86,14 @@ export default function Security() {
                             {key.replace(/([A-Z])/g, ' $1')}
                             <div className="password-box">
                                 <input
-                                    type={show ? 'text' : 'password'}
+                                    type={show ? "text" : "password"}
+                                    placeholder={
+                                        key === "currentPassword"
+                                            ? "Current Password"
+                                            : key === "newPassword"
+                                                ? "New Password"
+                                                : "Confirm New Password"
+                                    }
                                     value={form[key]}
                                     onChange={(e) =>
                                         setForm({ ...form, [key]: e.target.value })
@@ -95,22 +124,22 @@ export default function Security() {
                         <p>Devices currently logged into PrincessVerse.</p>
                     </div>
                 </div>
+                {sessions.map((session) => (
+                    <SessionCard
+                        key={session.id}
+                        icon={session.icon}
+                        name={session.name}
+                        location={session.location}
+                        current={session.current}
+                    />
+                ))}
 
-                <SessionCard
-                    icon={Laptop}
-                    name="Windows Chrome"
-                    current
-                    location="Bareilly, India"
-                />
-
-                <SessionCard
-                    icon={Smartphone}
-                    name="Android Chrome"
-                    location="Last Active Today"
-                />
-
-                <button className="danger-button full-width">
-                    <LogOut size={16} /> Logout All Devices
+                <button
+                    className="danger-button full-width"
+                    onClick={() => toast.success("Logged out from all other devices")}
+                >
+                    <LogOut size={16} />
+                    Logout All Other Devices
                 </button>
             </GlassCard>
         </div>
@@ -129,9 +158,14 @@ function SessionCard({ icon: Icon, name, location, current }) {
             </div>
 
             {current ? (
-                <span className="current-device">Current</span>
+                <span className="current-device">Current Device</span>
             ) : (
-                <button className="logout-small">Logout</button>
+                <button
+                    className="logout-small"
+                    onClick={() => toast.success("Device logged out")}
+                >
+                    Logout
+                </button>
             )}
         </div>
     );

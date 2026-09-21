@@ -4,28 +4,26 @@ import {
   BellRing,
   ShieldCheck,
   LockKeyhole,
-  Cloud,
-  HeartHandshake,
   MoonStar,
-  Download,
   ChevronRight,
   CheckCircle2,
-} from 'lucide-react';
+} from "lucide-react";
+
+import { useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 import client from '../api/client';
 import GlassCard from '../components/GlassCard';
 import PageHeader from '../components/PageHeader';
 
 export default function Settings() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   const [settings, setSettings] = useState({
-    theme: 'princess-pink',
+    theme: "princess-pink",
     sweetReminders: true,
-    memoriesPrivate: true,
     notificationSound: true,
-    backupCloud: true,
-    canPartnerDownload: false,
+    memoriesPrivate: true,
   });
 
   useEffect(() => {
@@ -86,9 +84,9 @@ export default function Settings() {
         <div className="theme-grid">
           {[
             ['princess-pink', '🌸 Princess Pink'],
-            ['lavender-dream', '💜 Lavender Dream'],
+            // ['lavender-dream', '💜 Lavender Dream'],
             ['dark-princess', '🌙 Dark Princess'],
-            ['midnight-love', '🖤 Midnight Love'],
+            // ['midnight-love', '🖤 Midnight Love'],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -138,28 +136,35 @@ export default function Settings() {
           value={settings.memoriesPrivate}
           onChange={(v) => updateSetting('memoriesPrivate', v)}
         />
-
+        {/* 
         <SettingToggle
           title="Allow Partner to Download Memories"
           value={settings.canPartnerDownload}
           onChange={(v) => updateSetting('canPartnerDownload', v)}
-        />
+        /> */}
       </GlassCard>
 
-      <GlassCard className="settings-section clickable-card">
-        <div className="settings-row">
-          <div className="settings-left">
-            <LockKeyhole size={20} />
-            <div>
-              <strong>Security</strong>
-              <p>Change Password · Active Sessions</p>
+      <div
+        className="settings-section clickable-card"
+        onClick={() => navigate("/settings/security")}
+      >
+        <GlassCard>
+          <div className="settings-row">
+            <div className="settings-left">
+              <LockKeyhole size={20} />
+
+              <div>
+                <strong>Security</strong>
+                <p>Change Password</p>
+              </div>
             </div>
-          </div>
-          <ChevronRight size={18} />
-        </div>
-      </GlassCard>
 
-      <GlassCard className="settings-section clickable-card">
+            <ChevronRight size={18} />
+          </div>
+        </GlassCard>
+      </div>
+
+      {/* <GlassCard className="settings-section clickable-card">
         <div className="settings-row">
           <div className="settings-left">
             <HeartHandshake size={20} />
@@ -170,9 +175,9 @@ export default function Settings() {
           </div>
           <ChevronRight size={18} />
         </div>
-      </GlassCard>
+      </GlassCard> */}
 
-      <GlassCard className="settings-section clickable-card">
+      {/* <GlassCard className="settings-section clickable-card">
         <div className="settings-row">
           <div className="settings-left">
             <Cloud size={20} />
@@ -183,22 +188,28 @@ export default function Settings() {
           </div>
           <ChevronRight size={18} />
         </div>
-      </GlassCard>
+      </GlassCard> */}
 
-      <GlassCard className="settings-section clickable-card">
-        <div className="settings-row">
-          <div className="settings-left">
-            <MoonStar size={20} />
-            <div>
-              <strong>Theme Preview</strong>
-              <p>Live preview before saving.</p>
-            </div>
+      <GlassCard className="settings-section">
+        <div className="settings-heading">
+          <MoonStar size={22} />
+
+          <div>
+            <h3>Theme Preview</h3>
+            <small>See your PrincessVerse instantly.</small>
           </div>
-          <ChevronRight size={18} />
+        </div>
+
+        <div className="theme-preview-card">
+          <div className={`theme-preview ${settings.theme}`}>
+            <h3>PrincessVerse</h3>
+
+            <p>Love looks beautiful in every theme. 💖</p>
+          </div>
         </div>
       </GlassCard>
 
-      <GlassCard className="settings-section clickable-card">
+      {/* <GlassCard className="settings-section clickable-card">
         <div className="settings-row">
           <div className="settings-left">
             <Download size={20} />
@@ -209,7 +220,7 @@ export default function Settings() {
           </div>
           <ChevronRight size={18} />
         </div>
-      </GlassCard>
+      </GlassCard> */}
     </div>
   );
 }

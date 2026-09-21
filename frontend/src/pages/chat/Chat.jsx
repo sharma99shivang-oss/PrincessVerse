@@ -20,7 +20,13 @@ export default function Chat() {
 
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { messages, sendMessage, markSeen } = useChat();
+    const {
+        messages,
+        sendMessage,
+        markSeen,
+        typing,
+        onlineUsers,
+    } = useChat();
     const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
 
 
@@ -50,7 +56,13 @@ export default function Chat() {
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
-
+    useEffect(() => {
+        messages.forEach((msg) => {
+            if (msg.sender?._id !== user?._id && !msg.seen) {
+                markSeen(msg._id);
+            }
+        });
+    }, [messages, user]);
     // const loadMessages = async () => {
     //     try {
     //         const { data } = await client.get('/chat/messages');
@@ -96,8 +108,18 @@ export default function Chat() {
                         <h2>{partner?.name || "Princess ❤️"}</h2>
 
                         <div className="pv-online-row">
-                            <span className="pv-online-dot"></span>
-                            <span>Online</span>
+                            <span
+                                className={`pv-online-dot ${onlineUsers.includes(partner?._id)
+                                    ? "online"
+                                    : "offline"
+                                    }`}
+                            />
+
+                            <span>
+                                {onlineUsers.includes(partner?._id)
+                                    ? "Online"
+                                    : "Offline"}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -141,7 +163,11 @@ export default function Chat() {
                         />
                     ))
                 )}
-
+                {typing && (
+                    <div className="pv-typing-indicator">
+                        💖 {typing}
+                    </div>
+                )}
                 <div ref={bottomRef}></div>
             </div>
 

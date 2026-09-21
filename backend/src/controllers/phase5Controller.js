@@ -196,7 +196,12 @@ export async function getSettings(req, res) {
   res.json({ settings: couple?.settings || {} });
 }
 export async function updateSettings(req, res) {
-  const allowed = ['theme', 'notifications', 'privacy', 'language', 'timezone', 'dateFormat'];
+  const allowed = [
+    "theme",
+    "sweetReminders",
+    "notificationSound",
+    "memoriesPrivate",
+  ];
   const settings = Object.fromEntries(allowed.filter((key) => req.body[key] !== undefined).map((key) => [key, req.body[key]]));
   const couple = await Couple.findByIdAndUpdate(req.user.coupleId, { $set: Object.fromEntries(Object.entries(settings).map(([key, value]) => [`settings.${key}`, value])) }, { new: true });
   await logActivity({ req, action: 'settings.updated', entityType: 'Couple' });

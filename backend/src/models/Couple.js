@@ -51,7 +51,15 @@ const coupleSchema = new mongoose.Schema({
 
   modules: { type: modulesSchema, default: () => ({}) },
 
-  settings: { type: mongoose.Schema.Types.Mixed, default: {} },
+settings: {
+  type: mongoose.Schema.Types.Mixed,
+  default: {
+    theme: "princess-pink",
+    sweetReminders: true,
+    notificationSound: true,
+    memoriesPrivate: true,
+  },
+},
   inviteTokenHash: { type: String, select: false },
   inviteExpiresAt: { type: Date }
 }, { timestamps: true });

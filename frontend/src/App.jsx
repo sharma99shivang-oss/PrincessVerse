@@ -51,6 +51,7 @@ import ExportDataPage from './pages/admin/ExportData.jsx';
 import AnalyticsPage from './pages/admin/Analytics.jsx';
 import EditMemory from "./pages/admin/EditMemory";
 import Chat from "./pages/chat/Chat";
+import Security from "./pages/settings/Security.jsx";
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -93,6 +94,7 @@ export default function App() {
         element={<EditMemory />}
       />
       <Route path="/chat" element={<Chat />} />
+      <Route path="/settings/security" element={<Security />} />
     </Routes>
 
   );

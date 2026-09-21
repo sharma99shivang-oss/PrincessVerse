@@ -3,9 +3,10 @@ import { Send, Mic, Image, Smile, Camera } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import toast from "react-hot-toast";
 import client from "../../api/client";
-
+import { useChat } from "../../context/ChatContext";
 export default function ChatInput({ onSend }) {
     const [text, setText] = useState("");
+    const { startTyping, stopTyping } = useChat();
     const [showEmoji, setShowEmoji] = useState(false);
     const [uploading, setUploading] = useState(false);
 
@@ -23,13 +24,19 @@ export default function ChatInput({ onSend }) {
             media: null,
         });
 
+        stopTyping();      // 👈 typing stop
         setText("");
         setShowEmoji(false);
     };
 
     // ===== Emoji =====
     const addEmoji = (emojiData) => {
-        setText((prev) => prev + emojiData.emoji);
+        const newText = text + emojiData.emoji;
+        setText(newText);
+
+        if (newText.trim()) {
+            startTyping();
+        }
     };
 
     // ===== Upload Image / Video =====
@@ -130,8 +137,16 @@ export default function ChatInput({ onSend }) {
                 {/* Text */}
                 <input
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder={
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setText(value);
+
+                        if (value.trim()) {
+                            startTyping();
+                        } else {
+                            stopTyping();
+                        }
+                    }} placeholder={
                         uploading ? "Uploading..." : "Message your love... 💕"
                     }
                     disabled={uploading}

@@ -33,10 +33,18 @@ export function ChatProvider({ children }) {
 
                 coupleIdRef.current = coupleData.couple._id;
 
-                socket.emit("join", user._id);
-                socket.emit("join-couple", coupleData.couple._id);
+                const joinSocketRoom = () => {
+                    socket.emit("join", user._id);
+                    socket.emit("join-couple", coupleIdRef.current);
+                    console.log("❤️ Joined Room:", coupleIdRef.current);
+                };
 
-                console.log("❤️ Joined Room:", coupleData.couple._id);
+                if (socket.connected) {
+                    joinSocketRoom();
+                } else {
+                    socket.connect();
+                    socket.once("connect", joinSocketRoom);
+                }
             } catch (err) {
                 console.error("Chat init failed:", err);
             }
@@ -103,16 +111,19 @@ export function ChatProvider({ children }) {
                 media,
             });
 
-            // Sender ko instantly dikhao
-            setMessages((prev) => [...prev, data.message]);
+            // Sirf sender ke UI me add karo
+            setMessages((prev) => {
+                const exists = prev.some((m) => m._id === data.message._id);
+                return exists ? prev : [...prev, data.message];
+            });
 
-            // Partner ko realtime bhejo
-            socket.emit("send-message", data.message);
+            // ❌ YE LINE HATA DO
+            // socket.emit("send-message", data.message);
+
         } catch (err) {
             console.error("Send Error:", err.response?.data || err);
         }
     }
-
     // ===== TYPING =====
     function startTyping() {
         if (!coupleIdRef.current) return;

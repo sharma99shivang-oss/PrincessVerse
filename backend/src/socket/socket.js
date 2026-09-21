@@ -28,14 +28,18 @@ export function initSocket(server) {
 
         // ================= COUPLE ROOM =================
         socket.on("join-couple", (coupleId) => {
-            socket.join(coupleId);
-            console.log("❤️ Joined Couple Room:", coupleId);
+            const roomId = coupleId.toString();
+
+            socket.join(roomId);
+
+            console.log(`❤️ ${socket.id} joined room ${roomId}`);
+            console.log("Rooms =>", [...socket.rooms]);
         });
 
         // ================= LIVE MESSAGE =================
-        socket.on("send-message", (message) => {
-            socket.to(message.coupleId.toString()).emit("new-message", message);
-        });
+        // socket.on("send-message", (message) => {
+        //     socket.to(message.coupleId.toString()).emit("new-message", message);
+        // });
         // ================= LIVE NOTIFICATION =================
         socket.on("new-notification", (notification) => {
             io.to(notification.coupleId).emit(

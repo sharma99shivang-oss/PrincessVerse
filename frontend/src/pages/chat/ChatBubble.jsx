@@ -15,10 +15,12 @@ import client from "../../api/client";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "");
 
+const getMediaUrl = (url) =>
+    url?.startsWith("http") ? url : `${API_URL}${url || ""}`;
+
 const getImageUrl = (url) => {
     if (!url) return "/default-avatar.png";
-    if (url.startsWith("http")) return url;
-    return `${API_URL}${url}`;
+    return getMediaUrl(url);
 };
 
 export default function ChatBubble({
@@ -82,10 +84,14 @@ export default function ChatBubble({
                 {/* Render image/video before optional text, WhatsApp-style. */}
                 {message.media?.type === "image" && message.media?.url && (
                     <img
-                        src={`${API_URL}${message.media.url}`}
+                        src={getMediaUrl(message.media.url)}
                         alt="chat-media"
                         className="chat-image"
                         loading="lazy"
+                        onError={(event) => {
+                            console.error("Image failed:", getMediaUrl(message.media.url));
+                            event.currentTarget.src = "/image-error.png";
+                        }}
                         style={{
                             borderRadius: "18px",
                             display: "block",
@@ -107,7 +113,7 @@ export default function ChatBubble({
                             width: "100%",
                         }}
                     >
-                        <source src={`${API_URL}${message.media.url}`} />
+                        <source src={getMediaUrl(message.media.url)} />
                         Your browser does not support video playback.
                     </video>
                 )}
@@ -117,7 +123,7 @@ export default function ChatBubble({
                         <audio
                             controls
                             preload="metadata"
-                            src={getImageUrl(message.media.url)}
+                            src={getMediaUrl(message.media.url)}
                             style={{ width: "100%" }}
                         />
                         {message.media.duration > 0 && (

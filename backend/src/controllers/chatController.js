@@ -1,6 +1,7 @@
 import Message from "../models/Message.js";
 import { getIO } from "../socket/socket.js";
 import { sendNotification } from "../utils/sendNotification.js";
+import { uploadChatFileToCloudinary } from "../middleware/multerStorage.js";
 
 // ================= GET ALL CHAT =================
 export async function getMessages(req, res) {
@@ -90,12 +91,28 @@ export async function uploadChatMedia(req, res) {
         });
     }
 
-    res.json({
-        media: {
-            url: `/uploads/chat/${req.file.filename}`,
-            type: req.file.mimetype.startsWith("video") ? "video" : "image",
-        },
-    });
+    try {
+        const result = await uploadChatFileToCloudinary(req.file, "princessverse/chat");
+        const type = req.file.mimetype.startsWith("video/") ? "video" : "image";
+
+        if (!result?.secure_url) {
+            return res.status(502).json({
+                message: "Media upload did not return a Cloudinary URL.",
+            });
+        }
+
+        res.json({
+            media: {
+                url: result.secure_url,
+                type,
+            },
+        });
+    } catch (err) {
+        console.error("Chat Media Upload Error:", err);
+        res.status(err.statusCode || 500).json({
+            message: "Failed to upload chat media.",
+        });
+    }
 }
 
 // ================= UPLOAD AUDIO MESSAGE =================
@@ -105,12 +122,19 @@ export async function uploadChatAudio(req, res) {
     }
 
     try {
+        const result = await uploadChatFileToCloudinary(req.file, "princessverse/chat/audio");
+        if (!result?.secure_url) {
+            return res.status(502).json({
+                message: "Audio upload did not return a Cloudinary URL.",
+            });
+        }
+
         const message = await Message.create({
             coupleId: req.user.coupleId,
             sender: req.user._id,
             text: "",
             media: {
-                url: `/uploads/chat/audio/${req.file.filename}`,
+                url: result.secure_url,
                 type: "audio",
                 duration: Number(req.body.duration) || 0,
             },

@@ -1,11 +1,9 @@
 import { Router } from "express";
 import multer from "multer";
-import fs from "node:fs";
-import path from "node:path";
-import crypto from "node:crypto";
 import { protect } from "../middleware/auth.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadChat } from "../middleware/upload.js";
+import { chatMulterStorage } from "../middleware/multerStorage.js";
 
 import {
     getMessages,
@@ -20,17 +18,8 @@ const router = Router();
 
 router.use(protect);
 
-const audioDirectory = path.join(process.cwd(), "uploads", "chat", "audio");
-fs.mkdirSync(audioDirectory, { recursive: true });
-
 const audioUpload = multer({
-    storage: multer.diskStorage({
-        destination: (_req, _file, callback) => callback(null, audioDirectory),
-        filename: (_req, file, callback) => {
-            const extension = path.extname(file.originalname) || ".webm";
-            callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
-        },
-    }),
+    storage: chatMulterStorage,
     fileFilter: (_req, file, callback) => {
         if (!file.mimetype.startsWith("audio/")) {
             return callback(new multer.MulterError(

@@ -1,7 +1,5 @@
 import multer from "multer";
-import fs from "node:fs";
-import path from "node:path";
-import crypto from "node:crypto";
+import { chatMulterStorage } from "./multerStorage.js";
 
 // ===== Existing uploads (Gallery, Memories, Videos etc.) =====
 const allowed = new Set([
@@ -38,19 +36,8 @@ export const upload = multer({
   },
 });
 
-// Chat media is served by Express from /uploads, so chat files must be
-// persisted on disk instead of using the memory storage used by Cloudinary.
-const chatDirectory = path.join(process.cwd(), "uploads", "chat");
-fs.mkdirSync(chatDirectory, { recursive: true });
-
 export const uploadChat = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, callback) => callback(null, chatDirectory),
-    filename: (_req, file, callback) => {
-      const extension = path.extname(file.originalname).toLowerCase();
-      callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
-    },
-  }),
+  storage: chatMulterStorage,
   fileFilter: (_req, file, callback) => {
     if (!allowed.has(file.mimetype)) {
       return callback(

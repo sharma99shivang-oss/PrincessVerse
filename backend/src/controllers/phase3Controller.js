@@ -20,6 +20,24 @@ function withMemoryFavorite(item, userId) {
   return item;
 }
 
+function memoryFiles(req) {
+  return [
+    ...(req.files?.images || []).map((file) => ({ file, type: 'image' })),
+    ...(req.files?.videos || []).map((file) => ({ file, type: 'video' })),
+  ];
+}
+
+function validateMemoryFiles(files) {
+  for (const { file, type } of files) {
+    const maxBytes = type === 'video' ? 150 * 1024 * 1024 : 20 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      const error = new Error(`${type === 'video' ? 'Video' : 'Image'} exceeds the maximum allowed size.`);
+      error.statusCode = 413;
+      throw error;
+    }
+  }
+}
+
 function queryFilter(req, type) {
   const filter = { coupleId: req.user.coupleId };
   // 🔒 Partner ko future locked letters mat dikhao
@@ -106,19 +124,29 @@ export async function createResource(req, res) {
         : null;
   }
   const file = req.file || (req.files && Object.values(req.files).flat()[0]);
-  if (file) {
+  if (file && type !== 'memories') {
     const result = await uploadBuffer(file, `princessverse/${type}`);
     if (type === 'memories' || type === 'timeline') Object.assign(body, { mediaUrl: result.secure_url, mediaPublicId: result.public_id, mediaResourceType: result.resource_type });
     if (type === 'albums') Object.assign(body, { coverUrl: result.secure_url, coverPublicId: result.public_id });
   }
   if (type === 'memories' && req.files) {
-    const imageFiles = req.files.images || [];
-    const videoFiles = req.files.videos || [];
-    const results = await Promise.all([...imageFiles, ...videoFiles].map((entry) => uploadBuffer(entry, `princessverse/${type}`)));
-    body.images = results.filter((result) => result.resource_type === 'image').map((result) => result.secure_url);
-    body.videos = results.filter((result) => result.resource_type === 'video').map((result) => result.secure_url);
-    body.imagePublicIds = results.filter((result) => result.resource_type === 'image').map((result) => result.public_id);
-    body.videoPublicIds = results.filter((result) => result.resource_type === 'video').map((result) => result.public_id);
+    validateMemoryFiles(memoryFiles(req));
+    const uploads = await Promise.all(
+      memoryFiles(req).map(async ({ file: entry, type: mediaType }) => ({
+        mediaType,
+        result: await uploadBuffer(entry, `princessverse/memories`),
+      }))
+    );
+    body.images = uploads.filter(({ mediaType }) => mediaType === 'image').map(({ result }) => result.secure_url);
+    body.videos = uploads.filter(({ mediaType }) => mediaType === 'video').map(({ result }) => result.secure_url);
+    body.imagePublicIds = uploads.filter(({ mediaType }) => mediaType === 'image').map(({ result }) => result.public_id);
+    body.videoPublicIds = uploads.filter(({ mediaType }) => mediaType === 'video').map(({ result }) => result.public_id);
+    body.videoThumbnails = uploads
+      .filter(({ mediaType }) => mediaType === 'video')
+      .map(({ result }) => result.eager?.[1]?.secure_url || '');
+    body.videoDurations = uploads
+      .filter(({ mediaType }) => mediaType === 'video')
+      .map(({ result }) => Number(result.duration || 0));
   }
   const item = await Model.create({ ...body, createdBy: req.user._id, coupleId: req.user.coupleId });
   res.status(201).json({ item, ...(type === 'memories' ? { memory: item } : {}), ...(type === 'letters' ? { letter: { ...item.toObject(), message: item.message || item.content } } : {}) });
@@ -131,7 +159,7 @@ export async function updateResource(req, res) {
   if (!item) return res.status(404).json({ message: 'Item not found.' });
   const body = clean(req.body, ['_id', 'coupleId', 'createdBy', 'favoritedBy', 'mediaUrl', 'mediaPublicId', 'coverUrl', 'coverPublicId']);
   const file = req.file || (req.files && Object.values(req.files).flat()[0]);
-  if (file) {
+  if (file && type !== 'memories') {
     const result = await uploadBuffer(file, `princessverse/${type}`);
     if (type === 'memories' || type === 'timeline') {
       await deleteAsset(item.mediaPublicId, item.mediaResourceType);
@@ -141,39 +169,20 @@ export async function updateResource(req, res) {
       Object.assign(body, { coverUrl: result.secure_url, coverPublicId: result.public_id });
     }
   }
-  if (type === "memories" && req.files?.images?.length) {
+  if (type === "memories" && req.files) {
+    validateMemoryFiles(memoryFiles(req));
     const uploads = await Promise.all(
-      req.files.images.map((file) =>
-        uploadBuffer(file, "princessverse/memories")
-      )
+      memoryFiles(req).map(async ({ file: entry, type: mediaType }) => ({
+        mediaType,
+        result: await uploadBuffer(entry, "princessverse/memories"),
+      }))
     );
-
-    item.images.push(...uploads.map((u) => u.secure_url));
-    item.imagePublicIds.push(...uploads.map((u) => u.public_id));
-  } if (type === "memories" && req.files) {
-    // Images Upload
-    if (req.files.images?.length) {
-      const imageUploads = await Promise.all(
-        req.files.images.map((file) =>
-          uploadBuffer(file, "princessverse/memories")
-        )
-      );
-
-      item.images.push(...imageUploads.map((u) => u.secure_url));
-      item.imagePublicIds.push(...imageUploads.map((u) => u.public_id));
-    }
-
-    // Videos Upload
-    if (req.files.videos?.length) {
-      const videoUploads = await Promise.all(
-        req.files.videos.map((file) =>
-          uploadBuffer(file, "princessverse/memories")
-        )
-      );
-
-      item.videos.push(...videoUploads.map((u) => u.secure_url));
-      item.videoPublicIds.push(...videoUploads.map((u) => u.public_id));
-    }
+    item.images.push(...uploads.filter(({ mediaType }) => mediaType === 'image').map(({ result }) => result.secure_url));
+    item.imagePublicIds.push(...uploads.filter(({ mediaType }) => mediaType === 'image').map(({ result }) => result.public_id));
+    item.videos.push(...uploads.filter(({ mediaType }) => mediaType === 'video').map(({ result }) => result.secure_url));
+    item.videoPublicIds.push(...uploads.filter(({ mediaType }) => mediaType === 'video').map(({ result }) => result.public_id));
+    item.videoThumbnails.push(...uploads.filter(({ mediaType }) => mediaType === 'video').map(({ result }) => result.eager?.[1]?.secure_url || ''));
+    item.videoDurations.push(...uploads.filter(({ mediaType }) => mediaType === 'video').map(({ result }) => Number(result.duration || 0)));
   }
   Object.assign(item, body);
   await item.save();

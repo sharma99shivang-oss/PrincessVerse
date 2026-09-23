@@ -8,6 +8,8 @@ const memorySchema = new mongoose.Schema({
   location: { type: String, default: '' },
   images: { type: [String], default: [] },
   videos: { type: [String], default: [] },
+  videoThumbnails: { type: [String], default: [] },
+  videoDurations: { type: [Number], default: [] },
   imagePublicIds: { type: [String], default: [] },
   videoPublicIds: { type: [String], default: [] },
   mediaUrl: { type: String, default: '' },

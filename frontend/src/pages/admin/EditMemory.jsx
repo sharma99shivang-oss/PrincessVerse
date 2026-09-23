@@ -4,6 +4,31 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import client from '../../api/client';
 
+function SelectedMediaPreview({ file }) {
+    const [previewUrl, setPreviewUrl] = useState('');
+
+    useEffect(() => {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [file]);
+
+    if (file.type.startsWith('video/')) {
+        return (
+            <video
+                src={previewUrl}
+                controls
+                muted
+                playsInline
+                preload="metadata"
+                aria-label={`${file.name} preview`}
+            />
+        );
+    }
+
+    return <img src={previewUrl} alt="preview" />;
+}
+
 export default function EditMemory() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -18,7 +43,9 @@ export default function EditMemory() {
     const [location, setLocation] = useState('');
     const [tags, setTags] = useState('');
 
-    const [newImages, setNewImages] = useState([]);
+    // Keep one selection for both photos and videos so the existing upload
+    // control can replace/add either media type without changing its styling.
+    const [newMedia, setNewMedia] = useState([]);
 
     useEffect(() => {
         loadMemory();
@@ -57,14 +84,18 @@ export default function EditMemory() {
                 .filter(Boolean)
                 .forEach((tag) => formData.append('tags', tag));
 
-            newImages.forEach((file) => {
-                formData.append('images', file);
+            newMedia.forEach((file) => {
+                formData.append(file.type.startsWith('video/') ? 'videos' : 'images', file);
             });
 
-            await client.patch(`/memories/${id}`, formData);
+            const { data } = await client.patch(`/memories/${id}`, formData);
 
             toast.success('Memory updated ❤️');
-            navigate(`/memories/${id}`);
+            // Use the returned memory immediately when opening the details
+            // view, avoiding a full page refresh after the upload completes.
+            navigate(`/memories/${id}`, {
+                state: { updatedMemory: data.memory || data.item },
+            });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Update failed');
         } finally {
@@ -131,6 +162,18 @@ export default function EditMemory() {
                             <img src={img} alt="memory" />
                         </div>
                     ))}
+                    {memory.videos?.map((video, index) => (
+                        <div key={`video-${index}`} className="edit-photo-card">
+                            <video
+                                src={video}
+                                controls
+                                muted
+                                playsInline
+                                preload="metadata"
+                                aria-label="Current memory video"
+                            />
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -143,17 +186,16 @@ export default function EditMemory() {
                         hidden
                         multiple
                         type="file"
-                        accept="image/*"
-                        onChange={(e) => setNewImages(Array.from(e.target.files))}
+                        accept="image/*,video/*"
+                        onChange={(e) => setNewMedia(Array.from(e.target.files || []))}
                     />
                 </label>
 
                 <div className="preview-grid">
-                    {newImages.map((file, index) => (
-                        <img
-                            key={index}
-                            src={URL.createObjectURL(file)}
-                            alt="preview"
+                    {newMedia.map((file) => (
+                        <SelectedMediaPreview
+                            key={`${file.name}-${file.lastModified}`}
+                            file={file}
                         />
                     ))}
                 </div>

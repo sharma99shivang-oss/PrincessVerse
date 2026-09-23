@@ -7,9 +7,12 @@ const allowed = new Set([
   "image/png",
   "image/webp",
   "image/gif",
+  "image/heic",
+  "image/heif",
   "video/mp4",
   "video/webm",
   "video/quicktime",
+  "video/x-msvideo",
 ]);
 
 const storage = multer.memoryStorage();
@@ -31,7 +34,7 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: Number(process.env.MEDIA_MAX_SIZE || 50 * 1024 * 1024),
+    fileSize: Number(process.env.MEDIA_MAX_SIZE || 150 * 1024 * 1024),
     files: 10,
   },
 });

@@ -9,8 +9,33 @@ export function uploadBuffer(file, folder = 'princessverse') {
     return Promise.reject(error);
   }
   return new Promise((resolve, reject) => {
+    const isVideo = file.mimetype.startsWith('video/');
     const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: file.mimetype.startsWith('video/') ? 'video' : 'image' },
+      {
+        folder,
+        resource_type: isVideo ? 'video' : 'image',
+        quality: 'auto:best',
+        ...(isVideo
+          ? {
+              eager: [{
+                width: 1280,
+                height: 720,
+                crop: 'limit',
+                quality: 'auto:best',
+                fetch_format: 'auto',
+                streaming_profile: 'hd',
+              }, {
+                width: 800,
+                height: 800,
+                crop: 'fill',
+                gravity: 'auto',
+                format: 'jpg',
+                quality: 'auto:best',
+              }],
+              eager_async: false,
+            }
+          : { fetch_format: 'auto' }),
+      },
       (error, result) => (error ? reject(error) : resolve(result))
     );
     Readable.from(file.buffer).pipe(stream);

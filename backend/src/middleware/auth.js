@@ -5,8 +5,8 @@ export async function protect(req, res, next) {
   try {
     const header = req.headers.authorization;
 
-    console.log("===== AUTH REQUEST =====");
-    console.log("Header:", header);
+    // console.log("===== AUTH REQUEST =====");
+    // console.log("Header:", header);
 
     if (!header || !header.startsWith("Bearer ")) {
       return res.status(401).json({ message: "Authentication required." });
@@ -15,11 +15,11 @@ export async function protect(req, res, next) {
     const token = header.substring(7);
 
     const payload = verifyAccessToken(token);
-    console.log("JWT Payload:", payload);
+    // console.log("JWT Payload:", payload);
 
     const user = await User.findById(payload.sub).select("+password");
 
-    console.log("User Found:", user?._id);
+    // console.log("User Found:", user?._id);
 
     if (!user) {
       return res.status(401).json({ message: "Account not found." });

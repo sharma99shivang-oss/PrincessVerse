@@ -11,6 +11,8 @@
   --text-soft: #6d5a68;
   --border: #ffd7ea;
   --shadow: 0 12px 30px rgba(255, 79, 163, .18);
+  --card: var(--surface);
+  --text-secondary: var(--text-soft);
   --gradient: linear-gradient(135deg, #ffd4e8 0%, #fff1e8 48%, #fff 100%);
   --glass: rgba(255, 255, 255, .72);
   --glass-strong: rgba(255, 255, 255, .9);
@@ -28,6 +30,8 @@
   --text-soft: #b8b8c5;
   --border: #29293a;
   --shadow: 0 10px 40px rgba(255, 79, 163, .25);
+  --card: var(--surface);
+  --text-secondary: var(--text-soft);
   --gradient: linear-gradient(135deg, #170d1c, #211129 52%, #09090c);
   --glass: rgba(18, 18, 24, .72);
   --glass-strong: rgba(18, 18, 24, .92);
@@ -45,6 +49,8 @@
   --text-soft: #716286;
   --border: #dfd0ff;
   --shadow: 0 12px 28px rgba(122, 92, 255, .15);
+  --card: var(--surface);
+  --text-secondary: var(--text-soft);
   --gradient: linear-gradient(135deg, #e6d8ff, #fff, #f4edff);
   --glass: rgba(255, 255, 255, .72);
   --glass-strong: rgba(255, 255, 255, .92);
@@ -62,6 +68,8 @@
   --text-soft: #b6c4e4;
   --border: #243150;
   --shadow: 0 14px 34px rgba(79, 209, 255, .15);
+  --card: var(--surface);
+  --text-secondary: var(--text-soft);
   --gradient: linear-gradient(135deg, #101a40, #171536 52%, #060b1c);
   --glass: rgba(16, 23, 42, .72);
   --glass-strong: rgba(16, 23, 42, .93);

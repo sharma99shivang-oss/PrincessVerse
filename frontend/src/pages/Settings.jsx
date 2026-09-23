@@ -20,7 +20,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
 
   const [settings, setSettings] = useState({
-    theme: "princess-pink",
+    theme: "light",
     sweetReminders: true,
     notificationSound: true,
     memoriesPrivate: true,
@@ -83,10 +83,10 @@ export default function Settings() {
 
         <div className="theme-grid">
           {[
-            ['princess-pink', '🌸 Princess Pink'],
-            // ['lavender-dream', '💜 Lavender Dream'],
-            ['dark-princess', '🌙 Dark Princess'],
-            // ['midnight-love', '🖤 Midnight Love'],
+            ['light', '🌸 Romantic Pink'],
+            ['lavender', '💜 Lavender Dream'],
+            ['dark', '🌙 Luxury Dark'],
+            ['midnight', '🌌 Midnight Galaxy'],
           ].map(([value, label]) => (
             <button
               key={value}

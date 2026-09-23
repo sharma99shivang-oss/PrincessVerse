@@ -1,38 +1,32 @@
 import { Palette, CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
 import GlassCard from '../../components/GlassCard';
+import { useTheme } from '../../context/useTheme';
 
 const themes = [
   {
-    id: 'princess-pink',
-    name: 'Princess Pink',
+    id: 'light',
+    name: 'Light · Romantic Pink',
     gradient: 'linear-gradient(135deg,#ffd8ec,#fff,#ffe3f6)',
   },
   {
-    id: 'lavender-dream',
+    id: 'lavender',
     name: 'Lavender Dream',
     gradient: 'linear-gradient(135deg,#e9d8ff,#faf5ff,#f3e8ff)',
   },
   {
-    id: 'dark-princess',
+    id: 'dark',
     name: 'Dark Princess',
     gradient: 'linear-gradient(135deg,#1f1038,#5724a8,#ff5ba8)',
   },
   {
-    id: 'midnight-love',
+    id: 'midnight',
     name: 'Midnight Love',
     gradient: 'linear-gradient(135deg,#0b0b14,#32104d,#9d174d)',
   },
 ];
 
 export default function ThemeSettings() {
-  const [active, setActive] = useState('princess-pink');
-
-  const applyTheme = (theme) => {
-    setActive(theme);
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem('pv_theme', theme);
-  };
+  const { theme: active, setTheme: applyTheme } = useTheme();
 
   return (
     <div className="settings-subpage">

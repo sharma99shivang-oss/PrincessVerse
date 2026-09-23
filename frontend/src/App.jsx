@@ -52,6 +52,7 @@ import AnalyticsPage from './pages/admin/Analytics.jsx';
 import EditMemory from "./pages/admin/EditMemory";
 import Chat from "./pages/chat/Chat";
 import Security from "./pages/settings/Security.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -69,6 +70,7 @@ function RoleCollection({ admin, partner }) {
 
 export default function App() {
   return (
+    <ThemeProvider>
 
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -96,6 +98,7 @@ export default function App() {
       <Route path="/chat" element={<Chat />} />
       <Route path="/settings/security" element={<Security />} />
     </Routes>
+    </ThemeProvider>
 
   );
 }

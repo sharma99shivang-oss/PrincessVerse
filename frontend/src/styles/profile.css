@@ -1,0 +1,33 @@
+.profile-page,
+.couple-profile-page {
+  color: var(--text);
+}
+
+.profile-cover,
+.cover-photo,
+.profile-hero {
+  min-height: 220px;
+  border-radius: 28px;
+  background: var(--gradient);
+  overflow: hidden;
+}
+
+.profile-avatar,
+.floating-avatar {
+  border: 4px solid var(--surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.profile-stat,
+.love-info-card {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--glass);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 768px) {
+  .profile-cover,
+  .cover-photo,
+  .profile-hero { min-height: 170px; border-radius: 20px; }
+}

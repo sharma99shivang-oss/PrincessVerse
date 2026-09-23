@@ -19,35 +19,39 @@ export function ChatProvider({ children }) {
         if (!user?._id) return;
 
         let isMounted = true;
+        const joinRoom = async () => {
+            try {
+                const { data } = await client.get("/couples/me");
 
+                coupleIdRef.current = data.couple._id;
+
+                socket.emit("join", user._id);
+                socket.emit("join-couple", coupleIdRef.current);
+
+                console.log("❤️ Joined Room:", coupleIdRef.current);
+            } catch (err) {
+                console.error("Room join failed:", err);
+            }
+        };
         const initializeChat = async () => {
             try {
-                // Load old messages
+                // Load previous messages
                 const { data: chatData } = await client.get("/chat/messages");
+
                 if (isMounted) {
                     setMessages(chatData.messages || []);
                 }
 
-                // Join couple room
-                const { data: coupleData } = await client.get("/couples/me");
-                coupleIdRef.current = coupleData.couple._id;
+                // Join socket room
+                await joinRoom();
 
-                const joinRoom = () => {
-                    socket.emit("join", user._id);
-                    socket.emit("join-couple", coupleIdRef.current);
-                    console.log("❤️ Joined Room:", coupleIdRef.current);
-                };
-
-                // First connection
-                joinRoom();
-
-                // Every reconnect
+                // Rejoin automatically after reconnect
                 socket.on("connect", joinRoom);
+
             } catch (err) {
                 console.error("Chat init failed:", err);
             }
         };
-
         initializeChat();
 
         // ===== LIVE MESSAGE =====
@@ -92,33 +96,26 @@ export function ChatProvider({ children }) {
         return () => {
             isMounted = false;
 
+            socket.off("connect", joinRoom);
             socket.off("new-message", handleNewMessage);
             socket.off("typing", handleTyping);
             socket.off("stop-typing", handleStopTyping);
             socket.off("online-users", setOnlineUsers);
             socket.off("seen-message", handleSeen);
             socket.off("delete-message", handleDelete);
-            socket.off("connect", joinRoom);
         };
     }, [user]);
 
     // ===== SEND MESSAGE =====
     async function sendMessage({ text = "", media = null }) {
         try {
-            const { data } = await client.post("/chat/messages", {
+            await client.post("/chat/messages", {
                 text,
                 media,
             });
 
-            // Sirf sender ke UI me add karo
-            setMessages((prev) => {
-                const exists = prev.some((m) => m._id === data.message._id);
-                return exists ? prev : [...prev, data.message];
-            });
-
-            // ❌ YE LINE HATA DO
-            // socket.emit("send-message", data.message);
-
+            // Backend Socket.IO "new-message" emit karega.
+            // Yahan setMessages mat karo.
         } catch (err) {
             console.error("Send Error:", err.response?.data || err);
         }

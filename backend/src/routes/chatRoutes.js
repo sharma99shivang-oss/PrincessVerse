@@ -5,7 +5,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { protect } from "../middleware/auth.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { upload } from "../middleware/upload.js"; // SAME middleware as Memories
+import { uploadChat } from "../middleware/upload.js";
 
 import {
     getMessages,
@@ -53,7 +53,7 @@ router.patch("/seen/:id", asyncHandler(markSeen));
 // Upload Image / Video
 router.post(
     "/upload",
-    upload.single("media"),
+    uploadChat.single("media"),
     asyncHandler(uploadChatMedia)
 );
 

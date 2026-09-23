@@ -1,4 +1,7 @@
 import multer from "multer";
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
 
 // ===== Existing uploads (Gallery, Memories, Videos etc.) =====
 const allowed = new Set([
@@ -32,6 +35,36 @@ export const upload = multer({
   limits: {
     fileSize: Number(process.env.MEDIA_MAX_SIZE || 50 * 1024 * 1024),
     files: 10,
+  },
+});
+
+// Chat media is served by Express from /uploads, so chat files must be
+// persisted on disk instead of using the memory storage used by Cloudinary.
+const chatDirectory = path.join(process.cwd(), "uploads", "chat");
+fs.mkdirSync(chatDirectory, { recursive: true });
+
+export const uploadChat = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, callback) => callback(null, chatDirectory),
+    filename: (_req, file, callback) => {
+      const extension = path.extname(file.originalname).toLowerCase();
+      callback(null, `${Date.now()}-${crypto.randomUUID()}${extension}`);
+    },
+  }),
+  fileFilter: (_req, file, callback) => {
+    if (!allowed.has(file.mimetype)) {
+      return callback(
+        new multer.MulterError(
+          "LIMIT_UNEXPECTED_FILE",
+          "Only image and video files are allowed."
+        )
+      );
+    }
+
+    callback(null, true);
+  },
+  limits: {
+    fileSize: Number(process.env.MEDIA_MAX_SIZE || 50 * 1024 * 1024),
   },
 });
 

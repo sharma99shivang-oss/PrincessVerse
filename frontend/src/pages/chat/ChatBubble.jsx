@@ -13,7 +13,7 @@ import client from "../../api/client";
 
 
 
-const API_URL = import.meta.env.VITE_API_URL.replace("/api", "");
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace("/api", "");
 
 const getImageUrl = (url) => {
     if (!url) return "/default-avatar.png";
@@ -79,21 +79,39 @@ export default function ChatBubble({
                     </div>
                 )}
 
-                {/* Image */}
-                {message.media?.url && (
+                {/* Render image/video before optional text, WhatsApp-style. */}
+                {message.media?.type === "image" && message.media?.url && (
                     <img
-                        src={message.media.url}
+                        src={`${API_URL}${message.media.url}`}
                         alt="chat-media"
-                        className="pv-chat-media"
+                        className="chat-image"
+                        loading="lazy"
+                        style={{
+                            borderRadius: "18px",
+                            display: "block",
+                            maxWidth: "260px",
+                            width: "100%",
+                        }}
                     />
                 )}
 
-                {/* Text */}
-                {message.text && (
-                    <p className="pv-message-text">
-                        {message.text}
-                    </p>
+                {message.media?.type === "video" && message.media?.url && (
+                    <video
+                        controls
+                        className="chat-video"
+                        preload="metadata"
+                        style={{
+                            borderRadius: "18px",
+                            display: "block",
+                            maxWidth: "260px",
+                            width: "100%",
+                        }}
+                    >
+                        <source src={`${API_URL}${message.media.url}`} />
+                        Your browser does not support video playback.
+                    </video>
                 )}
+
                 {message.media?.type === "audio" && message.media.url && (
                     <div style={{ minWidth: "190px", maxWidth: "240px" }}>
                         <audio
@@ -109,6 +127,12 @@ export default function ChatBubble({
                             </small>
                         )}
                     </div>
+                )}
+
+                {message.text && (
+                    <p className="pv-message-text">
+                        {message.text}
+                    </p>
                 )}
                 {message.media?.url && (
                     <button

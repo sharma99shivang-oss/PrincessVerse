@@ -92,7 +92,7 @@ export async function uploadChatMedia(req, res) {
 
     res.json({
         media: {
-            url: req.file.path,
+            url: `/uploads/chat/${req.file.filename}`,
             type: req.file.mimetype.startsWith("video") ? "video" : "image",
         },
     });

@@ -26,6 +26,7 @@ const MessageSchema = new mongoose.Schema(
                 type: String,
                 enum: ["image", "video", "audio"],
             },
+            duration: Number,
         },
 
         seen: {
@@ -43,6 +44,7 @@ const MessageSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+
     },
     { timestamps: true }
 );

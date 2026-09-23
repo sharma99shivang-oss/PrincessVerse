@@ -1,6 +1,8 @@
 import Message from "../models/Message.js";
 import { getIO } from "../socket/socket.js";
 import { sendNotification } from "../utils/sendNotification.js";
+
+// ================= GET ALL CHAT =================
 export async function getMessages(req, res) {
     const messages = await Message.find({
         coupleId: req.user.coupleId,
@@ -13,54 +15,74 @@ export async function getMessages(req, res) {
     res.json({ messages });
 }
 
+// ================= SEND MESSAGE =================
 export async function sendMessage(req, res) {
-    const { text, media } = req.body;
+    try {
+        const { text, media } = req.body;
 
-    const message = await Message.create({
-        coupleId: req.user.coupleId,
-        sender: req.user._id,
-        text,
-        media,
-    });
+        const message = await Message.create({
+            coupleId: req.user.coupleId,
+            sender: req.user._id,
+            text,
+            media,
+        });
 
-    await message.populate("sender", "name avatar role");
+        await message.populate("sender", "name avatar role");
 
-    // ❤️ Live Socket Message
-    const io = getIO();
+        // 🔥 REALTIME MESSAGE
+        const io = getIO();
 
-    io.to(req.user.coupleId.toString()).emit("new-message", message);
+        if (io) {
+            const roomId = message.coupleId.toString();
+            console.log("📤 EMIT ROOM:", roomId);
+            console.log(
+                "Room socket count before emit:",
+                io.sockets.adapter.rooms.get(roomId)?.size || 0
+            );
+            io.to(roomId).emit("new-message", message);
+        }
 
-    // 🔔 Live Notification
-    await sendNotification({
-        coupleId: req.user.coupleId,
-        recipient: null,
-        title: `${message.sender.name} 💬`,
-        message: text || "Sent you a photo/video ❤️",
-        type: "chat",
-        link: "/chat",
-    });
+        // 🔔 Notification
+        await sendNotification({
+            coupleId: message.coupleId,
+            recipient: null,
+            title: `${message.sender.name} 💬`,
+            message: text || "Sent you a photo/video ❤️",
+            type: "chat",
+            link: "/chat",
+        });
 
-    res.status(201).json({ message });
+        res.status(201).json({ message });
+    } catch (err) {
+        console.error("Chat Send Error:", err);
+        res.status(500).json({ message: "Failed to send message." });
+    }
 }
 
+// ================= MARK SEEN =================
 export async function markSeen(req, res) {
-    const message = await Message.findByIdAndUpdate(
-        req.params.id,
+    const message = await Message.findOneAndUpdate(
+        { _id: req.params.id, coupleId: req.user.coupleId },
         { seen: true },
         { new: true }
     );
 
     const io = getIO();
 
-    io.to(req.user.coupleId.toString()).emit(
-        "seen-message",
-        message._id
-    );
+    if (io && message) {
+        const roomId = message.coupleId.toString();
+        console.log("📤 EMIT SEEN ROOM:", roomId);
+        console.log(
+            "Room socket count before seen emit:",
+            io.sockets.adapter.rooms.get(roomId)?.size || 0
+        );
+        io.to(roomId).emit("seen-message", String(message._id));
+    }
 
     res.json({ success: true });
 }
 
-// ===== Upload Image / Video =====
+// ================= UPLOAD IMAGE / VIDEO =================
 export async function uploadChatMedia(req, res) {
     if (!req.file) {
         return res.status(400).json({
@@ -70,19 +92,53 @@ export async function uploadChatMedia(req, res) {
 
     res.json({
         media: {
-            url: req.file.path, // Cloudinary URL
-            type: req.file.mimetype.startsWith("video")
-                ? "video"
-                : "image",
+            url: req.file.path,
+            type: req.file.mimetype.startsWith("video") ? "video" : "image",
         },
     });
 }
 
-// ===== Delete Chat =====
+// ================= UPLOAD AUDIO MESSAGE =================
+export async function uploadChatAudio(req, res) {
+    if (!req.file) {
+        return res.status(400).json({ message: "No audio selected." });
+    }
+
+    try {
+        const message = await Message.create({
+            coupleId: req.user.coupleId,
+            sender: req.user._id,
+            text: "",
+            media: {
+                url: `/uploads/chat/audio/${req.file.filename}`,
+                type: "audio",
+                duration: Number(req.body.duration) || 0,
+            },
+        });
+
+        await message.populate("sender", "name avatar role");
+
+        const io = getIO();
+        if (io) {
+            const roomId = message.coupleId.toString();
+            io.to(roomId).emit("new-message", message);
+        }
+
+        res.status(201).json({ message });
+    } catch (err) {
+        console.error("Chat Audio Upload Error:", err);
+        res.status(500).json({ message: "Failed to send audio message." });
+    }
+}
+
+// ================= DELETE CHAT =================
 export async function deleteChatMessage(req, res) {
     const { deleteForEveryone } = req.body;
 
-    const message = await Message.findById(req.params.id);
+    const message = await Message.findOne({
+        _id: req.params.id,
+        coupleId: req.user.coupleId,
+    });
 
     if (!message) {
         return res.status(404).json({
@@ -102,13 +158,22 @@ export async function deleteChatMessage(req, res) {
     }
 
     await message.save();
+
     const io = getIO();
 
-    io.to(req.user.coupleId.toString()).emit("delete-message", {
-        messageId: message._id,
-        deleteForEveryone,
-    });
-    res.json({
-        success: true,
-    });
+    if (io) {
+        const roomId = message.coupleId.toString();
+        console.log("📤 EMIT DELETE ROOM:", roomId);
+        console.log(
+            "Room socket count before delete emit:",
+            io.sockets.adapter.rooms.get(roomId)?.size || 0
+        );
+        io.to(roomId).emit("delete-message", {
+            messageId: String(message._id),
+            deleteForEveryone: Boolean(deleteForEveryone && message.deletedForEveryone),
+            deletedForUserId: String(req.user._id),
+        });
+    }
+
+    res.json({ success: true });
 }

@@ -94,6 +94,22 @@ export default function ChatBubble({
                         {message.text}
                     </p>
                 )}
+                {message.media?.type === "audio" && message.media.url && (
+                    <div style={{ minWidth: "190px", maxWidth: "240px" }}>
+                        <audio
+                            controls
+                            preload="metadata"
+                            src={getImageUrl(message.media.url)}
+                            style={{ width: "100%" }}
+                        />
+                        {message.media.duration > 0 && (
+                            <small style={{ color: "#9d6fa7" }}>
+                                {Math.floor(message.media.duration / 60)}:
+                                {String(message.media.duration % 60).padStart(2, "0")}
+                            </small>
+                        )}
+                    </div>
+                )}
                 {message.media?.url && (
                     <button
                         className="pv-media-menu-btn"
